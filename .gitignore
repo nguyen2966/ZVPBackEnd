@@ -1,0 +1,6 @@
+.env
+cookies.txt
+public/
+downloads/
+__pycache__/
+.vscode/
