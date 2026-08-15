@@ -442,23 +442,9 @@ Hiện **chưa bật rate limit**. Nếu bật sau này thì `429` sẽ luôn k�
 
 ---
 
-## 10. Hai cạm bẫy làm feed rỗng mà không có lỗi nào
 
-Cả hai đều từng xảy ra thật và cực khó truy, vì client bỏ qua unknown key nên **không có một dòng
-lỗi nào ở cả hai phía**.
 
-1. **Lồng thừa một tầng** — `items[].video.video.{…}` thay vì `items[].video.{…}`. Client nhận DTO
-   toàn giá trị mặc định rồi loại sạch mọi item.
-2. **`video.id` hoặc `playbackAsset.url` rỗng** — client **âm thầm loại riêng item đó** khỏi feed.
-
-Backend hiện có test tự động chặn cả hai (`test_backend.py`), và seed data không cho phép video
-thiếu `playback_url`/`thumbnail_url` lọt vào pool.
-
-Khi feed "mất" item mà không có lỗi, kiểm hai thứ này trước tiên.
-
----
-
-## 11. Sai khác so với SPEC.md
+## 10. Sai khác so với SPEC.md
 
 Ba điểm backend làm khác tài liệu gốc, đều có chủ đích:
 
@@ -472,7 +458,7 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 
 ---
 
-## 12. Checklist tích hợp
+## 11. Checklist tích hợp
 
 - [ ] Lưu cả `accessToken` và `refreshToken` sau login
 - [ ] Phân biệt `TOKEN_EXPIRED` (refresh) và `SESSION_REVOKED` (dừng hẳn, login lại)
