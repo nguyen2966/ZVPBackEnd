@@ -1,6 +1,8 @@
 .env
 cookies.txt
 public/
+public_v2/
 downloads/
+downloads_v2/
 __pycache__/
 .vscode/

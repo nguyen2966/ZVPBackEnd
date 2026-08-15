@@ -7,23 +7,22 @@ Chạy:
 
 CẢNH BÁO: chế độ mặc định DROP toàn bộ bảng trong schema.sql rồi tạo lại. Dùng cho dev/demo.
 
-Nguồn dữ liệu: feed_items.json (metadata thật lấy từ YouTube) + asset HLS trong public/hls
-do convert.py sinh ra.
+Nguồn dữ liệu: feed_items_v2.json - 200 video thật đã convert và upload lên VNDATA S3 bằng
+pipeline_v2.py. playback_url/thumbnail_url là URL S3 TUYỆT ĐỐI, không phải path local.
 
-Ba điều chỉnh có chủ đích so với dữ liệu gốc, để pool thoả yêu cầu ranking của SPEC mục 6:
+Hai điều chỉnh có chủ đích so với dữ liệu gốc, để pool thoả yêu cầu ranking của SPEC mục 6:
 
-1. Creator gom còn CREATOR_COUNT người (dữ liệu gốc có 90 uploader khác nhau).
+1. Creator gom còn CREATOR_COUNT người (dữ liệu gốc có ~180 uploader khác nhau).
    SPEC cần 10-20 creator, mỗi người ~10-20 video, nếu không tiêu chí "channel xem nhiều nhất"
    của client sẽ không bao giờ kích hoạt. Vì vậy video được gán creator theo vòng tròn,
    không giữ đúng uploader gốc.
 
-2. Pool nhân lên TARGET_VIDEO_COUNT row từ 100 asset có thật, nên mỗi asset HLS xuất hiện ở
-   2 video row với id khác nhau. SPEC chốt pool 200; ta chỉ có 100 video thật.
-   Muốn pool đúng bằng số video thật thì đặt TARGET_VIDEO_COUNT = 100.
-
-3. duration_ms lấy đúng độ dài thật của media (8s-180s) chứ không ép vào khoảng 15-60s mà
+2. duration_ms lấy đúng độ dài thật của media (8s-180s) chứ không ép vào khoảng 15-60s mà
    SPEC gợi ý: client tính completion rate = watchedMs / durationMs nên số này SAI sẽ làm
    hỏng mọi signal ranking. Độ chính xác quan trọng hơn việc khớp khoảng đề xuất.
+
+Muốn đổi pool đang chạy mà KHÔNG mất users/sessions/reactions thì dùng
+`python -m backend.migrate_v2 --apply` thay vì seed lại.
 """
 
 from __future__ import annotations
@@ -40,11 +39,9 @@ from .config import BASE_DIR, DATABASE_DSN
 from .routers.config import DEFAULT_PAYLOAD
 from .security import hash_password
 
-FEED_ITEMS = BASE_DIR / "feed_items.json"
-HLS_DIR = BASE_DIR / "public" / "hls"
+FEED_ITEMS = BASE_DIR / "feed_items_v2.json"
 SCHEMA_SQL = Path(__file__).resolve().parent / "schema.sql"
 
-TARGET_VIDEO_COUNT = 200     # SPEC mục 6
 CREATOR_COUNT = 15           # SPEC mục 6: 10-20 creator
 
 # User test để client đăng nhập ngay (SPEC mục 6).
@@ -53,39 +50,41 @@ TEST_USERS = [
     ("demo", "Demo User", "password123"),
 ]
 
-VIDEO_ID_RE = re.compile(r"/([^/]+)\.m3u8$")
+# video_id nằm trong key S3: .../hls/<video_id>/master.m3u8
+VIDEO_ID_RE = re.compile(r"/hls/([^/]+)/master\.m3u8")
 
 
 def load_source_items() -> list[dict]:
-    """Đọc feed_items.json, chỉ giữ item thực sự có asset HLS trên đĩa."""
+    """Đọc feed_items_v2.json; mỗi entry là một video thật đã nằm trên S3."""
     if not FEED_ITEMS.exists():
-        raise SystemExit(f"Không tìm thấy {FEED_ITEMS} - chạy dowload.py trước.")
+        raise SystemExit(f"Không tìm thấy {FEED_ITEMS} - chạy pipeline_v2.py trước.")
 
-    items = json.loads(FEED_ITEMS.read_text(encoding="utf-8"))
-    available = {p.parent.name for p in HLS_DIR.glob("*/master.m3u8")}
-
-    out = []
-    for entry in items:
+    out, seen = [], set()
+    for entry in json.loads(FEED_ITEMS.read_text(encoding="utf-8")):
         v = entry["video"]
-        match = VIDEO_ID_RE.search(v["playbackAsset"]["url"])
+        playback = v["playbackAsset"]["url"]
+        match = VIDEO_ID_RE.search(playback)
         if not match:
+            # Không suy được video_id -> bỏ hẳn. Video thiếu playback_url hợp lệ sẽ biến mất
+            # khỏi feed của client mà không có lỗi nào, nên tuyệt đối không seed row như vậy.
             continue
-        asset_id = match.group(1)
-        if asset_id not in available:
-            # Không có HLS -> bỏ hẳn. Video thiếu playback_url sẽ biến mất khỏi feed của
-            # client mà không có lỗi nào, nên tuyệt đối không seed row như vậy.
-            continue
+        video_id = match.group(1)
+        if video_id in seen:
+            raise SystemExit(f"Trùng video_id trong {FEED_ITEMS.name}: {video_id}")
+        seen.add(video_id)
         out.append({
-            "asset_id": asset_id,
-            "title": v.get("title") or asset_id,
+            "asset_id": video_id,
+            "title": v.get("title") or video_id,
             "caption": v.get("caption") or "",
             "duration_ms": int(v.get("durationMs") or 0),
             "category": (v.get("category") or {}).get("name") or "Uncategorized",
             "uploader": (v.get("user") or {}).get("displayName") or "Unknown",
             "avatar_url": (v.get("user") or {}).get("avatarUrl"),
+            "playback_url": playback,
+            "thumbnail_url": v["thumbnailAsset"]["url"],
         })
     if not out:
-        raise SystemExit("Không có item nào vừa có metadata vừa có asset HLS.")
+        raise SystemExit(f"Không đọc được video nào từ {FEED_ITEMS.name}.")
     return out
 
 
@@ -149,25 +148,22 @@ async def seed(conn: asyncpg.Connection) -> None:
         )
     print(f"→ {len(TEST_USERS)} user test: {', '.join(u for u, _, _ in TEST_USERS)} (mật khẩu: password123)")
 
-    # ---- Videos ----
-    rows = []
-    for i in range(TARGET_VIDEO_COUNT):
-        src = items[i % len(items)]
-        copy_index = i // len(items)
-        # Vòng thứ 2 trở đi dùng lại asset nhưng phải có id riêng (id là khoá của reaction).
-        video_id = src["asset_id"] if copy_index == 0 else f"{src['asset_id']}_{copy_index + 1}"
-        rows.append((
-            video_id,
+    # ---- Videos: một row cho mỗi video thật, không nhân bản ----
+    rows = [
+        (
+            src["asset_id"],
             creator_ids[i % len(creator_ids)],
             category_id[src["category"]],
             src["title"],
             src["caption"],
             src["duration_ms"],
-            # Lưu PATH, API ghép base URL lúc trả response - xem comment trong schema.sql
-            f"/video/upload/sp_auto/{src['asset_id']}.m3u8",
-            f"/video/upload/so_auto/{src['asset_id']}.jpg",
+            # URL S3 tuyệt đối; serializer cho URL tuyệt đối đi thẳng, không ghép base URL.
+            src["playback_url"],
+            src["thumbnail_url"],
             "READY",
-        ))
+        )
+        for i, src in enumerate(items)
+    ]
 
     await conn.executemany(
         """
@@ -177,8 +173,7 @@ async def seed(conn: asyncpg.Connection) -> None:
         """,
         rows,
     )
-    print(f"→ {len(rows)} video status=READY "
-          f"({len(items)} asset thật, mỗi asset dùng {TARGET_VIDEO_COUNT // len(items)} lần)")
+    print(f"→ {len(rows)} video status=READY (mỗi video là một asset riêng trên S3)")
 
     # ---- Config bundle (SPEC mục 5) ----
     await conn.execute(

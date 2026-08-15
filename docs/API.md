@@ -13,6 +13,7 @@ Cách expose server ra thiết bị thật: [../SERVING.md](../SERVING.md).
 | | |
 |---|---|
 | Base URL (dev, cùng máy) | `http://localhost:3000` |
+| Media | VNDATA S3 — `https://s3-hcm-r2.s3cloud.vn/zvideo-media/…` |
 | Base URL (điện thoại cùng WiFi) | `http://<IP-LAN>:3000` — server in ra khi khởi động |
 | Content type | `application/json; charset=utf-8` |
 | Auth | `Authorization: Bearer <accessToken>` cho **mọi** endpoint trừ `/api/auth/*` |
@@ -28,16 +29,21 @@ curl -s localhost:3000/api/feed -H "authorization: Bearer $TOKEN" | jq '.items |
 `GET /health` không cần auth, dùng để kiểm tra server + DB còn sống:
 
 ```json
-{ "status": "ok", "readyVideos": 200, "videos": 200, "users": 17, "hlsAssets": 102 }
+{ "status": "ok", "readyVideos": 200, "videos": 200, "users": 21, "hlsAssets": 102 }
 ```
 
-### URL của asset bám theo host mà client gọi
+### URL của asset trỏ thẳng tới VNDATA S3
 
-`playbackAsset.url` và `thumbnailAsset.url` được dựng từ **chính host của request**. Gọi feed qua
-`localhost` thì URL asset là `localhost`; gọi qua `192.168.29.9` thì URL asset là `192.168.29.9`.
+`playbackAsset.url` và `thumbnailAsset.url` là **URL tuyệt đối tới VNDATA S3**, không đi qua
+backend:
 
-Client **không cần** ghép base URL, cứ dùng thẳng URL trong response. Đổi giữa localhost / LAN /
-tunnel không phải sửa gì ở cả hai phía.
+```
+https://s3-hcm-r2.s3cloud.vn/zvideo-media/hls/<video_id>/master.m3u8
+https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/<video_id>.jpg
+```
+
+Client **không cần** ghép base URL, cứ dùng thẳng URL trong response. Media không phụ thuộc vào
+việc backend đang chạy ở localhost, IP LAN hay tunnel — chỉ JSON đi qua backend.
 
 ---
 
@@ -374,17 +380,20 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
 [des.md](des.md).
 
 ```
-/video/upload/sp_auto/<id>.m3u8              master, 3–5 rendition
-/video/upload/sp_auto/<tier>/<id>.m3u8       media playlist từng rendition
-/video/upload/sp_auto/<tier>/<id>.mp4dv      1 file fMP4/rendition, cắt bằng byte-range
-/video/upload/so_auto/<id>.jpg               thumbnail
+<S3>/hls/<id>/master.m3u8              master, 3–5 rendition
+<S3>/hls/<id>/<tier>/index.m3u8        media playlist từng rendition
+<S3>/hls/<id>/<tier>/<id>.mp4dv        1 file fMP4/rendition, cắt bằng byte-range
+<S3>/thumbs/<id>.jpg                   thumbnail
 ```
 
-Client dựa được vào các bảo đảm sau (đã kiểm trên toàn bộ 102 asset):
+URI variant trong master là **tương đối** (`pg_5/index.m3u8`), resolve theo baseUri của master —
+Media3 xử lý sẵn bằng `UriUtil.resolve`, nhưng script test tự viết thì phải nhớ điều này.
+
+Client dựa được vào các bảo đảm sau (đã kiểm trên toàn bộ 200 video):
 
 - Master luôn ≥ 3 rendition, mỗi `#EXT-X-STREAM-INF` đều có `BANDWIDTH` (và `RESOLUTION`, `CODECS`).
   Ladder tối đa 5 tier `pg_1`…`pg_5` (180×320 → 720×1280); video nguồn nhỏ hơn thì ít tier hơn,
-  không bao giờ dưới 3.
+  không bao giờ dưới 3. Thực tế trên pool 200 video: 188 video 5 tier, 11 video 4 tier, 1 video 3 tier.
 - Mọi media playlist có `#EXT-X-PLAYLIST-TYPE:VOD` **và** `#EXT-X-ENDLIST` → Media3 không bao giờ
   hiểu nhầm là LIVE và ném `PlaylistStuckException`.
 - `#EXT-X-TARGETDURATION:4`, segment 4s, đóng gói `#EXT-X-MAP` + `#EXT-X-BYTERANGE` trong một file
@@ -455,7 +464,6 @@ Ba điểm backend làm khác tài liệu gốc, đều có chủ đích:
 
 | Sai khác | Lý do |
 |---|---|
-| Pool 200 video được dựng từ **100 asset HLS thật**, mỗi asset dùng cho 2 video row có `id` khác nhau | SPEC chốt pool 200 nhưng hiện chỉ có 100 video thật. Hệ quả client cần biết: hai `video.id` khác nhau có thể trỏ tới cùng một nội dung |
 | **9 category** thay vì 5–8 | Lấy đúng category có thật trong dữ liệu |
 | `durationMs` nằm trong khoảng **8.000–180.000** thay vì 15.000–60.000 | Lấy đúng độ dài thật của media. `durationMs` sai sẽ làm hỏng completion rate của ranking, nên độ chính xác được ưu tiên hơn việc khớp khoảng đề xuất |
 

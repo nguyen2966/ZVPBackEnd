@@ -19,9 +19,11 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import re
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from urllib.parse import urljoin
 
 import httpx
 
@@ -306,13 +308,27 @@ def main() -> int:
     section("15. playbackAsset.url phục vụ được HLS thật")
     token_b_hdr = {"authorization": f"Bearer {token_b}"}
     item = client.get("/api/feed", headers=token_b_hdr).json()["items"][0]["video"]
-    r = client.get(item["playbackAsset"]["url"])
-    check("master playlist trả 200", r.status_code == 200, item["playbackAsset"]["url"])
+    master_url = item["playbackAsset"]["url"]
+    r = client.get(master_url)
+    check("master playlist trả 200", r.status_code == 200, master_url)
     check("là multivariant (>=3 rendition)", r.text.count("#EXT-X-STREAM-INF") >= 3, r.text[:200])
+
+    # URI variant trong master có thể là tương đối ("pg_5/index.m3u8" - bản trên S3) hoặc
+    # absolute path ("/video/upload/..." - bản phục vụ local), nên phải resolve theo URL của
+    # chính master thay vì ghép vào base_url của client.
     variant = next(l.strip() for l in r.text.splitlines() if l.strip() and not l.startswith("#"))
-    rv = client.get(variant)
-    check("variant playlist trả 200", rv.status_code == 200)
-    check("variant có #EXT-X-ENDLIST", "#EXT-X-ENDLIST" in rv.text)
+    variant_url = urljoin(master_url, variant)
+    rv = client.get(variant_url)
+    check("variant playlist trả 200", rv.status_code == 200, variant_url)
+    check("variant có #EXT-X-ENDLIST", "#EXT-X-ENDLIST" in rv.text, variant_url)
+
+    # Segment: lấy init segment trong #EXT-X-MAP rồi thử Range GET (đúng cách client preload)
+    seg = re.search(r'URI="([^"]+)"', rv.text)
+    if seg:
+        rs = client.get(urljoin(variant_url, seg.group(1)), headers={"Range": "bytes=0-99"})
+        check("segment trả 206 cho Range", rs.status_code == 206, str(rs.status_code))
+        check("segment có Content-Range", "content-range" in {k.lower() for k in rs.headers})
+
     rt = client.get(item["thumbnailAsset"]["url"])
     check("thumbnail trả 200", rt.status_code == 200)
 
