@@ -1,0 +1,479 @@
+# API & hành vi backend — tài liệu cho client
+
+Tài liệu này mô tả **backend đang chạy thật**, không phải bản dự kiến. Mọi ví dụ JSON bên dưới
+được copy nguyên văn từ response thật của server.
+
+Hợp đồng gốc: [SPEC.md](SPEC.md). Yêu cầu định dạng HLS: [des.md](des.md).
+Cách expose server ra thiết bị thật: [../SERVING.md](../SERVING.md).
+
+---
+
+## 1. Bắt đầu nhanh
+
+| | |
+|---|---|
+| Base URL (dev, cùng máy) | `http://localhost:3000` |
+| Base URL (điện thoại cùng WiFi) | `http://<IP-LAN>:3000` — server in ra khi khởi động |
+| Content type | `application/json; charset=utf-8` |
+| Auth | `Authorization: Bearer <accessToken>` cho **mọi** endpoint trừ `/api/auth/*` |
+| Tài khoản test | `khoa` / `password123`, `demo` / `password123` |
+
+```bash
+TOKEN=$(curl -s localhost:3000/api/auth/login -H 'content-type: application/json' \
+  -d '{"username":"khoa","password":"password123","deviceId":"devA"}' | jq -r .accessToken)
+
+curl -s localhost:3000/api/feed -H "authorization: Bearer $TOKEN" | jq '.items | length'   # 10
+```
+
+`GET /health` không cần auth, dùng để kiểm tra server + DB còn sống:
+
+```json
+{ "status": "ok", "readyVideos": 200, "videos": 200, "users": 17, "hlsAssets": 102 }
+```
+
+### URL của asset bám theo host mà client gọi
+
+`playbackAsset.url` và `thumbnailAsset.url` được dựng từ **chính host của request**. Gọi feed qua
+`localhost` thì URL asset là `localhost`; gọi qua `192.168.29.9` thì URL asset là `192.168.29.9`.
+
+Client **không cần** ghép base URL, cứ dùng thẳng URL trong response. Đổi giữa localhost / LAN /
+tunnel không phải sửa gì ở cả hai phía.
+
+---
+
+## 2. Quy ước chung
+
+**Timestamp** — ISO-8601 UTC kèm mili giây và hậu tố `Z`: `2026-08-14T09:12:03.412Z`.
+Không dùng epoch. Client gửi lên cũng phải đúng dạng này.
+
+**Số** — `Int` cho counter, `Long` (ms) cho `durationMs`. Không bao giờ là string.
+
+**Field lạ** — client bỏ qua an toàn. Backend thêm field mới sẽ không làm hỏng client.
+
+**Shape lỗi** — mọi lỗi đều đúng một dạng:
+
+```json
+{ "error": { "code": "SESSION_REVOKED", "message": "Signed in on another device" } }
+```
+
+---
+
+## 3. Xác thực
+
+### Vòng đời token
+
+```
+login ──► accessToken (1 giờ) + refreshToken
+             │
+             ├─ 401 TOKEN_EXPIRED   ──► POST /api/auth/refresh ──► accessToken mới
+             │
+             └─ 401 SESSION_REVOKED ──► DỪNG retry, bắt user login lại
+```
+
+> **Chi tiết quan trọng nhất của toàn bộ API client-side.**
+> Hai `code` này cùng nằm trên HTTP 401 nhưng ý nghĩa trái ngược. Gộp chúng lại thì client sẽ
+> đốt hết số lần retry để refresh một session đã chết vĩnh viễn.
+
+### Mỗi user chỉ một session active
+
+Login thành công sẽ **revoke toàn bộ session cũ** của user đó (`revoked_reason = 'NEW_LOGIN'`).
+Ràng buộc này do database ép bằng partial unique index, không code path nào lách được.
+
+Hệ quả client cần chuẩn bị: đang dùng máy A, user login máy B → **mọi request từ máy A** (kể cả
+`/api/auth/refresh`) trả `401 SESSION_REVOKED` ngay lập tức. Đây là hành vi đúng, không phải lỗi.
+
+### `POST /api/auth/register`
+
+Không cần auth.
+
+```json
+// request
+{ "username": "khoa", "password": "…", "displayName": "Khoa Nguyen" }
+// 201
+{ "userId": "3f1a…", "username": "khoa", "displayName": "Khoa Nguyen" }
+```
+
+`409 USERNAME_TAKEN` nếu username đã tồn tại.
+
+### `POST /api/auth/login`
+
+Không cần auth.
+
+```json
+// request
+{ "username": "khoa", "password": "password123", "deviceId": "devA" }
+```
+```json
+// 200
+{
+  "userId": "49a1f4c2-21e2-49c7-8e28-2617592b1b04",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
+  "refreshToken": "dFQH0XDqDJFNCJHW...",
+  "expiresInSeconds": 3600
+}
+```
+
+`401` nếu sai username hoặc password.
+
+### `POST /api/auth/refresh`
+
+```json
+// request
+{ "refreshToken": "…" }
+// 200
+{ "accessToken": "…", "expiresInSeconds": 3600 }
+```
+
+`401 SESSION_REVOKED` nếu refresh token thuộc session đã bị revoke.
+
+---
+
+## 4. `GET /api/feed`
+
+Cần auth. **Không tham số.** Trả đúng 10 item random trong pool 200 video `status = READY`.
+
+Response chỉ có duy nhất key `items` — **không có** `cursor`, `hasMore`, `page`, `offset`,
+`serverScore`. Feed là random có chủ đích (xem mục 8).
+
+```json
+{
+  "items": [
+    {
+      "position": 0,
+      "video": {
+        "id": "VeoACWts2F4_2",
+        "user": {
+          "id": "38a2cecc-26d2-4702-81ba-dbf139af6366",
+          "displayName": "Revive Music",
+          "username": "revivemusic",
+          "avatarUrl": "https://res.cloudinary.com/…/cld-sample.jpg"
+        },
+        "category": { "name": "Food" },
+        "title": "CƠM 20K Ở SÀI GÒN THÌ NHƯ THẾ NÀO ?? || SHORTS",
+        "caption": "CƠM 20K Ở SÀI GÒN THÌ NHƯ THẾ NÀO ?? || SHORTS",
+        "durationMs": 59000,
+        "playbackAsset":  { "url": "http://127.0.0.1:3000/video/upload/sp_auto/VeoACWts2F4.m3u8" },
+        "thumbnailAsset": { "url": "http://127.0.0.1:3000/video/upload/so_auto/VeoACWts2F4.jpg" },
+        "engagement": { "likeCount": 0, "dislikeCount": 0, "bookmarkCount": 0 },
+        "viewerState": { "isBookmarked": false, "reaction": null }
+      }
+    }
+  ]
+}
+```
+
+| Field | Ghi chú |
+|---|---|
+| `position` | 0-based **trong array trả về**, không phải thứ hạng toàn cục |
+| `video.id` | Luôn có, không rỗng. Là khoá dùng cho mọi mutation reaction |
+| `playbackAsset.url` | Luôn có. HLS **master playlist multivariant** (mục 7) |
+| `category.name` | Luôn có |
+| `caption` | Có thể là chuỗi rỗng `""`, không bao giờ `null` |
+| `viewerState.reaction` | `"LIKE"` \| `"DISLIKE"` \| `null` — trạng thái của **chính user đang gọi** |
+| `viewerState.isBookmarked` | `true` \| `false` |
+| `engagement.*` | Số nguyên, đã clamp ≥ 0 |
+
+`position` được đánh lại từ 0 cho mỗi lần gọi, nên không dùng nó làm khoá dedup — dùng `video.id`.
+
+**Feed có thể trả trùng video giữa các lần gọi.** Không có state phân trang, không lọc video đã
+xem. Client tự dedup và tự lọc.
+
+---
+
+## 5. Reaction
+
+Ba loại: `LIKE`, `DISLIKE`, `BOOKMARK`. Mỗi `(user, video, type)` là một trạng thái bật/tắt độc lập,
+trừ cặp LIKE/DISLIKE loại trừ nhau (mục 5.4).
+
+### 5.1 `POST /api/reactions`
+
+Cần auth. Nhận **một array** để flush cả queue offline trong một round trip.
+
+```json
+{
+  "mutations": [
+    { "mutationId": "9f1c…", "videoId": "VeoACWts2F4_2", "type": "LIKE",
+      "active": true, "clientUpdatedAt": "2026-08-13T13:10:29.424Z" }
+  ]
+}
+```
+
+| Field | Ý nghĩa |
+|---|---|
+| `mutationId` | UUID do client sinh **mới cho mỗi hành động**. Chỉ để trace, server không dùng làm khoá chống trùng |
+| `videoId` | `video.id` lấy từ feed |
+| `type` | `LIKE` \| `DISLIKE` \| `BOOKMARK` |
+| `active` | `true` = bật reaction, `false` = bỏ reaction |
+| `clientUpdatedAt` | **Thời điểm user bấm**, không phải lúc gửi request. Đây là khoá quyết định LWW |
+
+- Tối đa **200 mutation** mỗi request, vượt thì `400 BATCH_TOO_LARGE`.
+- Toàn bộ batch áp trong **một transaction**, theo đúng thứ tự trong array.
+- **Luôn trả `200`** khi request hợp lệ; lỗi báo theo từng item.
+
+> `clientUpdatedAt` phải là lúc user bấm. Nếu client điền thời điểm gửi request, mọi hành động
+> offline sẽ luôn "thắng" oan khi đồng bộ muộn, và cơ chế LWW mất tác dụng.
+
+Response — trạng thái từng item + counter mới nhất của mọi video bị chạm tới:
+
+```json
+{
+  "results": [
+    { "mutationId": "e456d179-…", "status": "APPLIED" },
+    { "mutationId": "f185e07e-…", "status": "REJECTED", "reason": "VIDEO_NOT_FOUND" }
+  ],
+  "videos": [
+    { "id": "VeoACWts2F4_2", "likeCount": 1, "dislikeCount": 0, "bookmarkCount": 0 }
+  ]
+}
+```
+
+| `status` | Nghĩa | Client làm gì |
+|---|---|---|
+| `APPLIED` | Đã ghi | Đánh dấu đã sync |
+| `STALE` | Server đang giữ giá trị mới hơn hoặc bằng | Lấy `current` làm sự thật, ghi đè state local |
+| `REJECTED` | Mutation không hợp lệ | **Bỏ hẳn, không retry** |
+
+`STALE` luôn kèm `current` là trạng thái server đang giữ:
+
+```json
+{
+  "mutationId": "90fefd69-…",
+  "status": "STALE",
+  "current": { "active": true, "clientUpdatedAt": "2026-08-13T13:10:29.424Z" }
+}
+```
+
+Lý do `REJECTED`: `VIDEO_NOT_FOUND` (video không tồn tại hoặc đã xoá) · `INVALID_TYPE`
+(type ngoài 3 giá trị hợp lệ) · `INVALID_TIMESTAMP` (không parse được, hoặc lệch quá 1 năm so với
+giờ server).
+
+**`videos` là nguồn sự thật cho số đếm.** Đây là counter *sau khi commit*. Client dùng nó thay cho
+con số optimistic đang hiển thị. Bỏ qua nó thì số đếm sẽ lệch 1 cho tới lần fetch feed sau.
+
+### 5.2 Idempotency — gửi lại cùng một mutation là an toàn
+
+Retry sau timeout **không bao giờ đếm đôi**. Gửi lại y nguyên mutation cũ (cùng
+`clientUpdatedAt`) thì server trả `STALE` và counter đứng yên.
+
+Thực đo trên server đang chạy:
+
+| # | Gửi | Kết quả | `likeCount` |
+|---|---|---|---|
+| 1 | `LIKE active=true` @ `T` | `APPLIED` | 0 → **1** |
+| 2 | y nguyên request #1 | `STALE` | **1** (không nhích) |
+| 3 | `LIKE active=false` @ `T-1h` | `STALE` | **1** (lệnh cũ bị bỏ qua) |
+| 4 | `LIKE active=false` @ `T+1h` | `APPLIED` | 1 → **0** |
+
+Vì vậy client cứ retry thoải mái khi mất mạng — miễn giữ nguyên `clientUpdatedAt` của lần user
+bấm đầu tiên, **không** cập nhật lại timestamp mỗi lần retry.
+
+### 5.3 Last-write-wins
+
+Xung đột giải theo `clientUpdatedAt`, **không** theo thứ tự request tới server. Mutation có
+timestamp cũ hơn hoặc bằng giá trị server đang giữ sẽ bị bỏ qua và trả `STALE` (hàng #3 ở bảng trên).
+
+Đây là thứ giữ cho dữ liệu đúng khi user thao tác offline trên hai thiết bị rồi đồng bộ lệch giờ.
+
+Đồng hồ client chạy nhanh sẽ bị kẹp về `giờ server + 2 phút`. Gửi timestamp tương lai xa không
+giúp "thắng" LWW, chỉ làm mọi mutation sau đó trong cùng khoảng bị kẹp bằng nhau.
+
+### 5.4 LIKE và DISLIKE loại trừ nhau
+
+Set `LIKE active=true` thì server **tự tắt** `DISLIKE` của cùng video trong cùng transaction, và
+ngược lại. Client chỉ cần gửi một mutation.
+
+Nếu client vẫn gửi tường minh mutation tắt cái kia (với cùng `clientUpdatedAt`) thì cũng không sao —
+lần áp thứ hai là no-op. Hai bên không đánh nhau.
+
+Không bao giờ có chuyện `GET /api/reactions` trả về cả LIKE lẫn DISLIKE cho cùng một video.
+
+### 5.5 `GET /api/reactions`
+
+Cần auth. Không tham số, không phân trang. Trả **toàn bộ** reaction đang bật của user.
+
+Dùng khi vừa login trên thiết bị mới (cache local trống): response đã nhúng sẵn `video` nên client
+vẽ được ngay màn hình bookmark mà không phải bắn thêm N request.
+
+```json
+{
+  "items": [
+    {
+      "videoId": "VeoACWts2F4",
+      "type": "BOOKMARK",
+      "clientUpdatedAt": "2026-08-14T17:07:35.532Z",
+      "video": {
+        "id": "VeoACWts2F4",
+        "title": "CƠM 20K Ở SÀI GÒN THÌ NHƯ THẾ NÀO ?? || SHORTS",
+        "thumbnailUrl": "http://127.0.0.1:3000/video/upload/so_auto/VeoACWts2F4.jpg",
+        "durationMs": 59000,
+        "category": "Food",
+        "creator": {
+          "id": "8857d3fb-…",
+          "displayName": "THƯ VIỆN PHÁP LUẬT",
+          "username": "thvinphplut",
+          "avatarUrl": "https://res.cloudinary.com/…/messi_afp8ax.webp"
+        },
+        "engagement": { "likeCount": 0, "dislikeCount": 1, "bookmarkCount": 1 }
+      }
+    }
+  ]
+}
+```
+
+Lưu ý shape ở đây **khác** feed, đừng dùng chung parser:
+
+| Feed | GET /api/reactions |
+|---|---|
+| `video.user` | `video.creator` |
+| `video.thumbnailAsset.url` | `video.thumbnailUrl` |
+| `video.category.name` | `video.category` (string) |
+| có `playbackAsset` | **không có** `playbackAsset` |
+
+Chỉ trả row đang bật. Bỏ reaction rồi thì entry biến mất khỏi đây, kể cả server vẫn giữ row nội bộ
+để phục vụ LWW. Video đã xoá cũng bị loại khỏi response.
+
+---
+
+## 6. `GET /api/config`
+
+Cần auth. Trả bundle config đang bật, kèm `ETag`.
+
+```json
+{
+  "version": 1,
+  "ttlSeconds": 900,
+  "payload": {
+    "feed":    { "fallbackTimeoutMs": 1200, "pageSize": 10, "maxWindow": 100 },
+    "ranking": {
+      "positiveCompletionRate": 0.6,
+      "minPlaybackMsForSession": 0,
+      "enabled": ["likedChannel", "dislikedChannel", "mostWatchedChannel",
+                  "likedCategory", "dislikedCategory", "mostWatchedCategory"],
+      "weights": { "likedChannel": 1.0, "dislikedChannel": -1.5, "mostWatchedChannel": 0.8,
+                   "likedCategory": 0.6, "dislikedCategory": -0.8, "mostWatchedCategory": 0.5 }
+    },
+    "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
+    "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
+               "sessionTtlDays": 90, "maxSessions": 5000 }
+  }
+}
+```
+
+- `ETag` hiện tại: `W/"config-v1"`, derive từ `version`. Gửi lại qua `If-None-Match` → `304`.
+- **Không bao giờ trả `404`.** Chưa có bundle nào bật thì trả bundle default với `version = 0`.
+  Client cold start cứ gọi thẳng, không cần xử lý trường hợp thiếu config.
+- `payload` là opaque với server — đổi trọng số ranking không cần release app, chỉ cần tăng
+  `version` và bật bundle mới.
+- `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client**.
+
+---
+
+## 7. Asset HLS
+
+`playbackAsset.url` trỏ tới **master playlist multivariant**, đúng định dạng mô tả trong
+[des.md](des.md).
+
+```
+/video/upload/sp_auto/<id>.m3u8              master, 3–5 rendition
+/video/upload/sp_auto/<tier>/<id>.m3u8       media playlist từng rendition
+/video/upload/sp_auto/<tier>/<id>.mp4dv      1 file fMP4/rendition, cắt bằng byte-range
+/video/upload/so_auto/<id>.jpg               thumbnail
+```
+
+Client dựa được vào các bảo đảm sau (đã kiểm trên toàn bộ 102 asset):
+
+- Master luôn ≥ 3 rendition, mỗi `#EXT-X-STREAM-INF` đều có `BANDWIDTH` (và `RESOLUTION`, `CODECS`).
+  Ladder tối đa 5 tier `pg_1`…`pg_5` (180×320 → 720×1280); video nguồn nhỏ hơn thì ít tier hơn,
+  không bao giờ dưới 3.
+- Mọi media playlist có `#EXT-X-PLAYLIST-TYPE:VOD` **và** `#EXT-X-ENDLIST` → Media3 không bao giờ
+  hiểu nhầm là LIVE và ném `PlaylistStuckException`.
+- `#EXT-X-TARGETDURATION:4`, segment 4s, đóng gói `#EXT-X-MAP` + `#EXT-X-BYTERANGE` trong một file
+  `.mp4dv` cho mỗi rendition.
+- Segment trả `206 Partial Content` + `Content-Range` cho request có header `Range` → preload theo
+  byte-range hoạt động đúng.
+- Playlist cũng hỗ trợ Range đúng chuẩn (trả `206` thật, không phải "200 + full body").
+- Không có `Connection: close`; keep-alive bật.
+- CORS expose sẵn `ETag`, `Content-Range`, `Accept-Ranges`, `Retry-After`.
+
+Ladder **ổn định theo thời gian** cho cùng một video, nên cache playlist trong RAM là an toàn.
+
+---
+
+## 8. Backend cố tình KHÔNG làm
+
+Không phải thiếu, mà vì chúng thuộc về client — làm ở server sẽ xung đột.
+
+| Không có | Vì sao |
+|---|---|
+| Ranking, personalization, `serverScore` | Ranking chạy hoàn toàn ở client, dựa trên dữ liệu xem lưu local mà server không có |
+| Lọc video đã xem | Server không có khái niệm "đã xem" |
+| `cursor` / `hasMore` / `page` / `offset` | Feed là random, cố tình không có state phân trang |
+| Phân trang cho `/api/reactions` | Toàn bộ tập chỉ cỡ vài trăm row |
+| Trả tombstone ra API | Row đã tắt là chuyện nội bộ của server |
+| `4xx` cho một item reaction lỗi | Sẽ chặn queue offline của client vĩnh viễn |
+| Ghi log/analytics lượt xem | Chưa có trong phạm vi |
+
+---
+
+## 9. Bảng lỗi
+
+| HTTP | `code` | Khi nào | Client làm gì |
+|---|---|---|---|
+| `400` | `INVALID_REQUEST` | Body sai shape | Sửa payload, không retry |
+| `400` | `BATCH_TOO_LARGE` | > 200 mutation | Chia nhỏ batch |
+| `401` | `TOKEN_EXPIRED` | Token hết hạn / thiếu / hỏng | Refresh rồi thử lại |
+| `401` | `SESSION_REVOKED` | Đã login ở thiết bị khác | **Dừng retry**, bắt user login lại |
+| `403` | `FORBIDDEN` | | |
+| `404` | `NOT_FOUND` | Asset không tồn tại. Không dùng cho `/api/config` | |
+| `409` | `USERNAME_TAKEN` | Register trùng username | |
+| `429` | `RATE_LIMITED` | Kèm header `Retry-After` | Đọc `Retry-After` để tính lúc thử lại |
+| `500` | `INTERNAL` | | |
+
+Hiện **chưa bật rate limit**. Nếu bật sau này thì `429` sẽ luôn kèm `Retry-After`.
+
+---
+
+## 10. Hai cạm bẫy làm feed rỗng mà không có lỗi nào
+
+Cả hai đều từng xảy ra thật và cực khó truy, vì client bỏ qua unknown key nên **không có một dòng
+lỗi nào ở cả hai phía**.
+
+1. **Lồng thừa một tầng** — `items[].video.video.{…}` thay vì `items[].video.{…}`. Client nhận DTO
+   toàn giá trị mặc định rồi loại sạch mọi item.
+2. **`video.id` hoặc `playbackAsset.url` rỗng** — client **âm thầm loại riêng item đó** khỏi feed.
+
+Backend hiện có test tự động chặn cả hai (`test_backend.py`), và seed data không cho phép video
+thiếu `playback_url`/`thumbnail_url` lọt vào pool.
+
+Khi feed "mất" item mà không có lỗi, kiểm hai thứ này trước tiên.
+
+---
+
+## 11. Sai khác so với SPEC.md
+
+Ba điểm backend làm khác tài liệu gốc, đều có chủ đích:
+
+| Sai khác | Lý do |
+|---|---|
+| Pool 200 video được dựng từ **100 asset HLS thật**, mỗi asset dùng cho 2 video row có `id` khác nhau | SPEC chốt pool 200 nhưng hiện chỉ có 100 video thật. Hệ quả client cần biết: hai `video.id` khác nhau có thể trỏ tới cùng một nội dung |
+| **9 category** thay vì 5–8 | Lấy đúng category có thật trong dữ liệu |
+| `durationMs` nằm trong khoảng **8.000–180.000** thay vì 15.000–60.000 | Lấy đúng độ dài thật của media. `durationMs` sai sẽ làm hỏng completion rate của ranking, nên độ chính xác được ưu tiên hơn việc khớp khoảng đề xuất |
+
+Ngoài ra: creator được gom về 15 người (dữ liệu gốc có 90 uploader) để mỗi creator có 13–14 video —
+nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không bao giờ kích hoạt.
+
+---
+
+## 12. Checklist tích hợp
+
+- [ ] Lưu cả `accessToken` và `refreshToken` sau login
+- [ ] Phân biệt `TOKEN_EXPIRED` (refresh) và `SESSION_REVOKED` (dừng hẳn, login lại)
+- [ ] Dedup feed theo `video.id`, **không** theo `position`
+- [ ] Dùng thẳng `playbackAsset.url`, không tự ghép base URL
+- [ ] `clientUpdatedAt` = lúc **user bấm**, giữ nguyên qua mọi lần retry
+- [ ] Lấy số đếm từ mảng `videos` trong response, không tự cộng trừ optimistic mãi
+- [ ] Xử lý `STALE` bằng cách nhận `current` làm sự thật
+- [ ] `REJECTED` thì bỏ hẳn khỏi queue, không retry
+- [ ] Batch ≤ 200 mutation
+- [ ] Parser riêng cho `GET /api/reactions` (`creator`/`thumbnailUrl`/`category` khác feed)
+- [ ] Cho phép cleartext HTTP nếu test qua LAN (xem [../SERVING.md](../SERVING.md))

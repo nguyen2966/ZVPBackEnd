@@ -1,0 +1,49 @@
+"""Cấu hình đọc từ .env cho backend."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
+
+
+def _require(key: str) -> str:
+    value = os.environ.get(key)
+    if not value:
+        raise SystemExit(f"Thiếu biến môi trường '{key}' trong .env")
+    return value
+
+
+def database_dsn() -> str:
+    """
+    DSN cho asyncpg. DB_URL trong .env đang ở dạng Prisma (có '?schema=public'),
+    còn libpq/asyncpg không hiểu tham số đó nên phải cắt bỏ query string.
+    """
+    return _require("DB_URL").split("?")[0]
+
+
+DATABASE_DSN = database_dsn()
+
+# Ký access token. Dev để mặc định cho tiện; production PHẢI đặt JWT_SECRET thật trong .env.
+JWT_SECRET = os.environ.get("JWT_SECRET", "dev-only-insecure-secret-change-me")
+JWT_ALGORITHM = "HS256"
+
+# SPEC mục 10.1: 1 giờ là hợp lý.
+ACCESS_TOKEN_TTL_SECONDS = int(os.environ.get("ACCESS_TOKEN_TTL_SECONDS", "3600"))
+
+# Ép base URL tuyệt đối cho asset (vd khi chạy sau tunnel). Rỗng -> suy từ request.
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+
+# SPEC mục 3.4: feed luôn trả 10 item random.
+FEED_SIZE = 10
+
+# SPEC mục 3.5: giới hạn mềm 200 mutation/request.
+MAX_MUTATIONS_PER_BATCH = 200
+
+# SPEC mục 3.7: TTL gợi ý cho client cache config bundle.
+CONFIG_TTL_SECONDS = 900

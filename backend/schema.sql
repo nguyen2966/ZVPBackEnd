@@ -1,0 +1,138 @@
+-- schema.sql - DDL cho backend video ngắn (theo docs/SPEC.md mục 2 và 4.4).
+-- Chạy được nguyên khối, idempotent (drop rồi tạo lại) - dùng cho dev/demo.
+
+create extension if not exists pgcrypto;   -- gen_random_uuid()
+
+-- Xoá theo thứ tự phụ thuộc để chạy lại được nhiều lần.
+drop trigger if exists reactions_counters on reactions;
+drop function if exists reactions_sync_counters();
+drop table if exists reactions;
+drop table if exists videos;
+drop table if exists categories;
+drop table if exists sessions;
+drop table if exists users;
+drop table if exists app_config;
+drop type if exists reaction_type;
+
+-- ---------- 2.1 Users, sessions ----------
+
+create table users (
+  id            uuid primary key default gen_random_uuid(),
+  username      text not null unique,
+  display_name  text not null,
+  avatar_url    text,
+  password_hash text not null,             -- bcrypt. Không bao giờ lưu plaintext
+  created_at    timestamptz not null default now()
+);
+
+create table sessions (
+  id                 uuid primary key default gen_random_uuid(),
+  user_id            uuid not null references users(id) on delete cascade,
+  device_id          text not null,
+  refresh_token_hash text not null,        -- hash, không lưu token gốc
+  created_at         timestamptz not null default now(),
+  last_seen_at       timestamptz not null default now(),
+  revoked_at         timestamptz,
+  revoked_reason     text                  -- 'NEW_LOGIN' | 'LOGOUT' | 'ADMIN'
+);
+
+-- Bất biến 8, do database ép: không code path nào tạo được session active thứ hai.
+create unique index sessions_one_active_per_user
+  on sessions (user_id) where revoked_at is null;
+
+-- ---------- 2.2 Nội dung ----------
+
+create table categories (
+  id   serial primary key,
+  name text not null unique
+);
+
+create table videos (
+  id            text primary key,          -- id ổn định, là khoá tham chiếu của reaction
+  creator_id    uuid not null references users(id) on delete cascade,
+  category_id   int  references categories(id),
+  title         text not null,
+  caption       text,
+  duration_ms   bigint not null check (duration_ms >= 0),
+
+  -- LƯU Ý (khác SPEC một chút, có chủ đích): lưu PATH tương đối, vd
+  --   /video/upload/sp_auto/<id>.m3u8
+  -- API sẽ ghép base URL của request để trả absolute URL cho client.
+  -- Lý do: host thay đổi liên tục giữa localhost / IP LAN / tunnel (xem SERVING.md);
+  -- lưu absolute URL sẽ phải re-seed mỗi lần đổi host.
+  playback_url  text not null,
+  thumbnail_url text,
+  status        text not null default 'READY'
+                check (status in ('UPLOADING','PROCESSING','READY','FAILED','DELETED')),
+
+  -- Counter denormalize, do trigger ở 4.4 cập nhật.
+  like_count     int not null default 0,
+  dislike_count  int not null default 0,
+  bookmark_count int not null default 0,
+
+  created_at    timestamptz not null default now()
+);
+-- Cố ý không đánh index cho query feed: `order by random()` phải quét và sort toàn bộ tập
+-- `status = 'READY'`, nên không index nào giúp được. Ở pool 200 row thì việc đó là miễn phí.
+
+-- ---------- 2.3 Reactions ----------
+
+create type reaction_type as enum ('LIKE', 'DISLIKE', 'BOOKMARK');
+
+create table reactions (
+  user_id            uuid not null references users(id) on delete cascade,
+  video_id           text not null references videos(id) on delete cascade,
+  type               reaction_type not null,
+
+  -- false = đã bỏ reaction. Giữ row lại (bất biến 3), không lộ ra API (bất biến 4).
+  active             boolean not null,
+
+  -- Thời điểm user bấm, do client gửi. Khoá LWW (bất biến 5).
+  client_updated_at  timestamptz not null,
+  client_mutation_id uuid not null,        -- để trace/log, không unique
+  server_updated_at  timestamptz not null default now(),
+
+  primary key (user_id, video_id, type)    -- bất biến 2
+);
+
+create index reactions_by_user on reactions (user_id) where active;         -- GET /api/reactions
+create index reactions_counts  on reactions (video_id, type) where active;  -- rebuild counter
+
+-- ---------- 2.4 Config ----------
+
+create table app_config (
+  id         serial primary key,
+  version    bigint not null,
+  payload    jsonb  not null,              -- server coi là opaque; shape ở mục 5
+  enabled    boolean not null default false,
+  updated_at timestamptz not null default now()
+);
+
+-- Đúng một bundle live tại một thời điểm.
+create unique index app_config_one_live on app_config (enabled) where enabled;
+
+-- ---------- 4.4 Trigger counter ----------
+
+create or replace function reactions_sync_counters() returns trigger as $$
+declare d int;
+begin
+  -- 0 khi retry không đổi trạng thái → counter không nhích. Đây là điểm cốt lõi.
+  d := (case when NEW.active then 1 else 0 end)
+     - (case when TG_OP = 'UPDATE' and OLD.active then 1 else 0 end);
+
+  if d <> 0 then
+    if NEW.type = 'LIKE' then
+      update videos set like_count = greatest(0, like_count + d) where id = NEW.video_id;
+    elsif NEW.type = 'DISLIKE' then
+      update videos set dislike_count = greatest(0, dislike_count + d) where id = NEW.video_id;
+    else
+      update videos set bookmark_count = greatest(0, bookmark_count + d) where id = NEW.video_id;
+    end if;
+  end if;
+  return NEW;
+end;
+$$ language plpgsql;
+
+create trigger reactions_counters
+after insert or update of active on reactions
+for each row execute function reactions_sync_counters();
