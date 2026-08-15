@@ -50,6 +50,7 @@ BASE_DIR = Path(__file__).resolve().parent
 HLS_DIR = BASE_DIR / "public" / "hls"
 THUMB_DIR = BASE_DIR / "public" / "thumbs"
 FEED_FILE = BASE_DIR / "feed_items.json"
+V2_FEED_FILE = BASE_DIR / "feed_items_v2.json"
 
 # Ép base URL trong response (vd: "https://abc.ngrok.io"). Bỏ trống -> suy ra từ request.
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
@@ -77,6 +78,8 @@ app.add_middleware(
 # ---- feed_items.json (cache theo mtime để sửa file xong không cần restart) ----
 _feed_cache: list[dict[str, Any]] = []
 _feed_mtime: float | None = None
+_feed_v2_cache: list[dict[str, Any]] = []
+_feed_v2_mtime: float | None = None
 
 
 def load_feed_items() -> list[dict[str, Any]]:
@@ -88,6 +91,24 @@ def load_feed_items() -> list[dict[str, Any]]:
         _feed_cache = json.loads(FEED_FILE.read_text(encoding="utf-8"))
         _feed_mtime = mtime
     return _feed_cache
+
+
+def load_feed_items_v2() -> list[dict[str, Any]]:
+    """Đọc feed V2 theo mtime; nội dung chứa URL HLS/thumbnail trực tiếp trên VNDATA."""
+    global _feed_v2_cache, _feed_v2_mtime
+    if not V2_FEED_FILE.exists():
+        raise HTTPException(
+            status_code=503,
+            detail=f"Chưa có {V2_FEED_FILE.name}; chạy pipeline_v2.py trước",
+        )
+    mtime = V2_FEED_FILE.stat().st_mtime
+    if mtime != _feed_v2_mtime:
+        data = json.loads(V2_FEED_FILE.read_text(encoding="utf-8"))
+        if not isinstance(data, list):
+            raise HTTPException(status_code=503, detail=f"{V2_FEED_FILE.name} không phải JSON array")
+        _feed_v2_cache = data
+        _feed_v2_mtime = mtime
+    return _feed_v2_cache
 
 
 def iso_ms(dt: datetime) -> str:
@@ -172,6 +193,32 @@ async def get_feed(request: Request, limit: int = DEFAULT_FEED_SIZE, feedKey: st
                 "video": localize_video(entry["video"], base),
             }
             for position, entry in enumerate(sample)
+        ],
+    }
+
+
+@app.get("/api/v2/feed")
+async def get_feed_v2(limit: int = DEFAULT_FEED_SIZE, feedKey: str = "for_you"):
+    """Chỉ trả feed JSON; client tải HLS/thumbnail trực tiếp từ URL VNDATA trong item."""
+    items = load_feed_items_v2()
+    if not items:
+        raise HTTPException(status_code=503, detail=f"{V2_FEED_FILE.name} rỗng")
+
+    limit = max(1, min(limit, len(items)))
+    selected = random.sample(items, limit)
+    now = datetime.now(timezone.utc)
+    return {
+        "feedKey": feedKey,
+        "generationId": f"gen_{now:%Y%m%d%H%M}",
+        "generatedAt": iso_ms(now),
+        "expiresAt": iso_ms(now + FEED_TTL),
+        "items": [
+            {
+                "position": position,
+                "serverScore": round(random.uniform(7.5, 10.0), 2),
+                "video": deepcopy(entry["video"]),
+            }
+            for position, entry in enumerate(selected)
         ],
     }
 

@@ -1,0 +1,7 @@
+boto3
+fastapi
+openpyxl
+pandas
+python-dotenv
+uvicorn
+yt-dlp[default]
