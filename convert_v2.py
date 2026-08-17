@@ -7,7 +7,7 @@ Với mỗi mp4 trong INPUT_DIR, script tạo ra:
     public_v2/hls/<video_id>/master.m3u8             -> master playlist MULTIVARIANT
     public_v2/hls/<video_id>/<tier>/index.m3u8       -> media playlist từng rendition
     public_v2/hls/<video_id>/<tier>/<video_id>.mp4dv -> fMP4 byte-range
-    public_v2/thumbs/<video_id>.jpg                  -> thumbnail tại khoảng 1,5 giây
+    public_v2/thumbnails/<video_id>.jpg              -> frame giải mã đầu tiên của video
 
 Bám theo des.md:
     §1 BẮT BUỘC  master multivariant, mỗi rendition khai báo BANDWIDTH/RESOLUTION/CODECS
@@ -44,7 +44,7 @@ from typing import NamedTuple
 BASE_DIR = Path(__file__).resolve().parent
 INPUT_DIR = BASE_DIR / "downloads_v2"
 HLS_DIR = BASE_DIR / "public_v2" / "hls"
-THUMB_DIR = BASE_DIR / "public_v2" / "thumbs"
+THUMB_DIR = BASE_DIR / "public_v2" / "thumbnails"
 
 # Độ dài segment mục tiêu (giây). Cloudinary dùng 4s - xem des.md §4.
 SEGMENT_SECONDS = 4
@@ -186,6 +186,8 @@ def convert_one(src: Path, force: bool) -> tuple[bool, str]:
 
     if force and out_dir.exists():
         shutil.rmtree(out_dir, ignore_errors=True)
+    if force and thumb.exists():
+        thumb.unlink()
 
     if master.exists():
         notes.append("HLS đã có")
@@ -210,13 +212,13 @@ def convert_one(src: Path, force: bool) -> tuple[bool, str]:
 
         normalize_master(master)
 
-    # ---- Thumbnail: tránh frame đầu có thể đen hoặc chưa có nội dung ----
+    # Không seek: ffmpeg xuất đúng frame video giải mã đầu tiên, không phải frame ở 1,5 giây.
     if thumb.exists():
         notes.append("thumb đã có")
     else:
         ok, err = run([
             "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-            "-ss", "1.5", "-i", str(src), "-frames:v", "1", "-q:v", "2", "-an", str(thumb),
+            "-i", str(src), "-map", "0:v:0", "-frames:v", "1", "-q:v", "2", "-an", str(thumb),
         ])
         if not ok:
             return False, f"thumbnail lỗi: {err.splitlines()[-1] if err else 'không rõ lỗi'}"

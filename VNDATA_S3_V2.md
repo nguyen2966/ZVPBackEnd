@@ -67,7 +67,7 @@ downloads_v2/<video_id>.mp4
 public_v2/hls/<video_id>/master.m3u8
 public_v2/hls/<video_id>/<tier>/index.m3u8
 public_v2/hls/<video_id>/<tier>/<video_id>.mp4dv
-public_v2/thumbs/<video_id>.jpg
+public_v2/thumbnails/<video_id>.jpg
 feed_items_v2.json
 ```
 

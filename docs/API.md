@@ -39,7 +39,7 @@ backend:
 
 ```
 https://s3-hcm-r2.s3cloud.vn/zvideo-media/hls/<video_id>/master.m3u8
-https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/<video_id>.jpg
+https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/<video_id>.jpg
 ```
 
 Client **không cần** ghép base URL, cứ dùng thẳng URL trong response. Media không phụ thuộc vào
@@ -383,7 +383,7 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
 <S3>/hls/<id>/master.m3u8              master, 3–5 rendition
 <S3>/hls/<id>/<tier>/index.m3u8        media playlist từng rendition
 <S3>/hls/<id>/<tier>/<id>.mp4dv        1 file fMP4/rendition, cắt bằng byte-range
-<S3>/thumbs/<id>.jpg                   thumbnail
+<S3>/thumbnails/<id>.jpg               thumbnail 
 ```
 
 URI variant trong master là **tương đối** (`pg_5/index.m3u8`), resolve theo baseUri của master —

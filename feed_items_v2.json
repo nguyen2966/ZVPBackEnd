@@ -33,7 +33,7 @@
       },
       "thumbnailAsset": {
         "id": "0de74ded-4205-4aba-b773-1967547aa66f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/DZ8_8OKyor8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/DZ8_8OKyor8.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:27:39Z",
         "updatedAt": "2026-08-12T13:27:39Z"
@@ -85,7 +85,7 @@
       },
       "thumbnailAsset": {
         "id": "ddf5e33b-9f10-4ba0-9b05-eef499a88eee",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/D8l6b1mFB3c.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/D8l6b1mFB3c.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:27:45Z",
         "updatedAt": "2026-08-11T15:27:45Z"
@@ -137,7 +137,7 @@
       },
       "thumbnailAsset": {
         "id": "f5312553-fb3b-4dfb-a279-e2f94a57b566",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/gQRAxfda4qA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/gQRAxfda4qA.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:27:58Z",
         "updatedAt": "2026-08-12T22:27:58Z"
@@ -189,7 +189,7 @@
       },
       "thumbnailAsset": {
         "id": "d6d83ff5-a396-43f1-b7af-0803b4db0483",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/HxSvxyEHjRM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/HxSvxyEHjRM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:28:08Z",
         "updatedAt": "2026-08-11T13:28:08Z"
@@ -241,7 +241,7 @@
       },
       "thumbnailAsset": {
         "id": "d6da77ad-6d39-4c71-aec9-e0dca833a0b5",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/33vOc-k_w-Q.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/33vOc-k_w-Q.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:28:23Z",
         "updatedAt": "2026-08-12T11:28:23Z"
@@ -293,7 +293,7 @@
       },
       "thumbnailAsset": {
         "id": "712017fa-0857-4cb2-8b05-d44dc12c8667",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/qstmVR5ZFMM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/qstmVR5ZFMM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:28:35Z",
         "updatedAt": "2026-08-12T07:28:35Z"
@@ -345,7 +345,7 @@
       },
       "thumbnailAsset": {
         "id": "1cdc5351-a7d9-42c0-b0e0-e524183e8e48",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/kqemoar6Tbk.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/kqemoar6Tbk.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:28:48Z",
         "updatedAt": "2026-08-12T21:28:48Z"
@@ -397,7 +397,7 @@
       },
       "thumbnailAsset": {
         "id": "675398d0-3130-4433-a0a2-7acb8f9443fe",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/M1hjNc9uaho.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/M1hjNc9uaho.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:28:57Z",
         "updatedAt": "2026-08-12T14:28:57Z"
@@ -449,7 +449,7 @@
       },
       "thumbnailAsset": {
         "id": "3e9f40f1-1822-4030-bab5-7038dff51164",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/4ar4bwuJwLo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/4ar4bwuJwLo.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:29:10Z",
         "updatedAt": "2026-08-11T20:29:10Z"
@@ -501,7 +501,7 @@
       },
       "thumbnailAsset": {
         "id": "c32c257c-feb3-40ed-af0a-e4695b2d6cb6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/tVCeX4V9WsM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/tVCeX4V9WsM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:29:35Z",
         "updatedAt": "2026-08-11T23:29:35Z"
@@ -553,7 +553,7 @@
       },
       "thumbnailAsset": {
         "id": "1ba918aa-5444-4ff1-b57a-42945b24ef4e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Ki4EHQvOlrw.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Ki4EHQvOlrw.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:29:48Z",
         "updatedAt": "2026-08-13T01:29:48Z"
@@ -605,7 +605,7 @@
       },
       "thumbnailAsset": {
         "id": "5344145b-9a0e-4583-a2c5-2ebc0307b3fd",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/NIgrPCgss_E.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/NIgrPCgss_E.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:30:11Z",
         "updatedAt": "2026-08-12T05:30:11Z"
@@ -657,7 +657,7 @@
       },
       "thumbnailAsset": {
         "id": "af7966b9-984b-468e-b3fa-3b97fa06da44",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/fmO36F7hlls.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/fmO36F7hlls.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:30:47Z",
         "updatedAt": "2026-08-11T11:30:47Z"
@@ -709,7 +709,7 @@
       },
       "thumbnailAsset": {
         "id": "a1080bc7-56da-4b14-87c9-17bf730c3a21",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/adtVFyvlDGQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/adtVFyvlDGQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:31:11Z",
         "updatedAt": "2026-08-11T22:31:11Z"
@@ -761,7 +761,7 @@
       },
       "thumbnailAsset": {
         "id": "c22d0684-1e6d-472b-8131-174844c09f92",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/O_oGMYrEMUQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/O_oGMYrEMUQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:31:17Z",
         "updatedAt": "2026-08-12T02:31:17Z"
@@ -813,7 +813,7 @@
       },
       "thumbnailAsset": {
         "id": "c1afec61-b713-4393-a7c3-83bbf36dd4db",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/rMLHOoQ96uY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/rMLHOoQ96uY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:31:38Z",
         "updatedAt": "2026-08-12T09:31:38Z"
@@ -865,7 +865,7 @@
       },
       "thumbnailAsset": {
         "id": "c0d5f3f8-3d71-44b4-820b-bb1773da91fc",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Ew6MXei0gTY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Ew6MXei0gTY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:31:50Z",
         "updatedAt": "2026-08-11T12:31:50Z"
@@ -917,7 +917,7 @@
       },
       "thumbnailAsset": {
         "id": "2019bfbb-cb4e-4131-b4fc-c0e9f0afeef7",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/VFxNIjQQ_Cs.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/VFxNIjQQ_Cs.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:32:24Z",
         "updatedAt": "2026-08-12T09:32:24Z"
@@ -969,7 +969,7 @@
       },
       "thumbnailAsset": {
         "id": "70d9fabe-157b-4379-8290-cf6735dd5e28",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/NRkVMY_q-vQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/NRkVMY_q-vQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:32:51Z",
         "updatedAt": "2026-08-12T14:32:51Z"
@@ -1021,7 +1021,7 @@
       },
       "thumbnailAsset": {
         "id": "b9ba4ad1-ed05-4f18-a5a0-71a48bd74c08",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/O6c4dTlK3t0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/O6c4dTlK3t0.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:32:59Z",
         "updatedAt": "2026-08-11T23:32:59Z"
@@ -1073,7 +1073,7 @@
       },
       "thumbnailAsset": {
         "id": "69835536-44d0-466e-bfa7-21fac6ae26b2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Qwo9D7CWAA4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Qwo9D7CWAA4.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:33:41Z",
         "updatedAt": "2026-08-12T10:33:41Z"
@@ -1125,7 +1125,7 @@
       },
       "thumbnailAsset": {
         "id": "8b147228-f8c6-4146-8d92-647b9555114e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/WwW0wRZfJbo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/WwW0wRZfJbo.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:33:49Z",
         "updatedAt": "2026-08-11T13:33:49Z"
@@ -1177,7 +1177,7 @@
       },
       "thumbnailAsset": {
         "id": "ad8a4f86-f654-48e2-a5ef-3ebc60875121",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/-xfSHY4DKyY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/-xfSHY4DKyY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:34:24Z",
         "updatedAt": "2026-08-11T05:34:24Z"
@@ -1229,7 +1229,7 @@
       },
       "thumbnailAsset": {
         "id": "f85ad3fe-3618-496d-98b8-128777e7c5d9",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/QaZR6rRuiU4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/QaZR6rRuiU4.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:34:50Z",
         "updatedAt": "2026-08-12T07:34:50Z"
@@ -1281,7 +1281,7 @@
       },
       "thumbnailAsset": {
         "id": "f8047e2b-db88-48c0-9e31-f99b553fc685",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/H19Cw7UNL5E.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/H19Cw7UNL5E.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:35:02Z",
         "updatedAt": "2026-08-12T22:35:02Z"
@@ -1333,7 +1333,7 @@
       },
       "thumbnailAsset": {
         "id": "4c465f37-a106-4b35-bb2c-3a2bbd401e60",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/ymb4mnZw1as.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/ymb4mnZw1as.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:35:35Z",
         "updatedAt": "2026-08-12T12:35:35Z"
@@ -1385,7 +1385,7 @@
       },
       "thumbnailAsset": {
         "id": "1fefe70f-c392-49c2-8675-485e79b583ee",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/mIi-MSTitaY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/mIi-MSTitaY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:36:06Z",
         "updatedAt": "2026-08-12T12:36:06Z"
@@ -1437,7 +1437,7 @@
       },
       "thumbnailAsset": {
         "id": "6376e3f7-d425-449b-8a4b-a5bac7a5a556",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/IF8CO57ATs8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/IF8CO57ATs8.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:36:19Z",
         "updatedAt": "2026-08-12T16:36:19Z"
@@ -1489,7 +1489,7 @@
       },
       "thumbnailAsset": {
         "id": "3731406d-0750-4b2e-a885-103eb5759a26",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/KjCd-rXinMA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/KjCd-rXinMA.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:36:29Z",
         "updatedAt": "2026-08-11T20:36:29Z"
@@ -1541,7 +1541,7 @@
       },
       "thumbnailAsset": {
         "id": "6634e958-4cc8-4d82-81a0-ae3af1e81af0",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/lIrOPHjqjxg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/lIrOPHjqjxg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:37:01Z",
         "updatedAt": "2026-08-12T03:37:01Z"
@@ -1593,7 +1593,7 @@
       },
       "thumbnailAsset": {
         "id": "eba0f12a-7266-4807-b643-132a150e430c",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/QyR4tUx_eE4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/QyR4tUx_eE4.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:37:28Z",
         "updatedAt": "2026-08-12T22:37:28Z"
@@ -1645,7 +1645,7 @@
       },
       "thumbnailAsset": {
         "id": "b265332c-0efa-42ef-884a-df015dd6bf1d",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/-McvU-1bK0k.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/-McvU-1bK0k.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:38:04Z",
         "updatedAt": "2026-08-12T12:38:04Z"
@@ -1697,7 +1697,7 @@
       },
       "thumbnailAsset": {
         "id": "d709456a-68db-4012-ab3c-aa6b41e39064",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/pPYL2dfdItY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/pPYL2dfdItY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:38:15Z",
         "updatedAt": "2026-08-12T01:38:15Z"
@@ -1749,7 +1749,7 @@
       },
       "thumbnailAsset": {
         "id": "474a7f96-23d0-464f-a380-045359318bd9",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/crWUycZIWCY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/crWUycZIWCY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:38:26Z",
         "updatedAt": "2026-08-12T23:38:26Z"
@@ -1801,7 +1801,7 @@
       },
       "thumbnailAsset": {
         "id": "747818f7-861c-4a83-8e36-47d3a9d7e108",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/rRmzD_dc9Ms.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/rRmzD_dc9Ms.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:38:37Z",
         "updatedAt": "2026-08-11T15:38:37Z"
@@ -1853,7 +1853,7 @@
       },
       "thumbnailAsset": {
         "id": "68cd0f00-a320-44d5-9101-5d8f29120afe",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/wS_D3LEp_9c.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/wS_D3LEp_9c.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:38:50Z",
         "updatedAt": "2026-08-12T19:38:50Z"
@@ -1905,7 +1905,7 @@
       },
       "thumbnailAsset": {
         "id": "cd3eb650-5833-492a-aefc-6075cad6ac2f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/OB7SXKVSNh8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/OB7SXKVSNh8.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:53:03Z",
         "updatedAt": "2026-08-11T10:53:03Z"
@@ -1957,7 +1957,7 @@
       },
       "thumbnailAsset": {
         "id": "aba70e5c-de8f-49fd-9be9-18f1ca521574",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/RBQTi7bVWEQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/RBQTi7bVWEQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:54:07Z",
         "updatedAt": "2026-08-11T02:54:07Z"
@@ -2009,7 +2009,7 @@
       },
       "thumbnailAsset": {
         "id": "70b8438b-24ea-4513-8869-e24a2bdbe237",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/oengVLNNbeg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/oengVLNNbeg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:54:29Z",
         "updatedAt": "2026-08-11T09:54:29Z"
@@ -2061,7 +2061,7 @@
       },
       "thumbnailAsset": {
         "id": "6a33b5b6-f683-4e3d-96c9-36b32a4a5ae2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/B2mSbRmCDrs.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/B2mSbRmCDrs.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:54:41Z",
         "updatedAt": "2026-08-12T04:54:41Z"
@@ -2113,7 +2113,7 @@
       },
       "thumbnailAsset": {
         "id": "9206aa95-11a3-47f7-9785-7053b93a563c",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/07HgEivo76M.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/07HgEivo76M.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:55:11Z",
         "updatedAt": "2026-08-11T12:55:11Z"
@@ -2165,7 +2165,7 @@
       },
       "thumbnailAsset": {
         "id": "18df32eb-0930-4736-8fe9-6af2c50d9396",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/CENMCsCuHLU.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/CENMCsCuHLU.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:55:25Z",
         "updatedAt": "2026-08-12T13:55:25Z"
@@ -2217,7 +2217,7 @@
       },
       "thumbnailAsset": {
         "id": "949cc4af-8954-4b26-8b99-baf2b278f0f8",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/E1wKUHww4fk.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/E1wKUHww4fk.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:55:37Z",
         "updatedAt": "2026-08-12T00:55:37Z"
@@ -2269,7 +2269,7 @@
       },
       "thumbnailAsset": {
         "id": "e0cac704-9d4b-4046-8a85-8ffebabab895",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/CoFVXChc1OM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/CoFVXChc1OM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:56:14Z",
         "updatedAt": "2026-08-12T19:56:14Z"
@@ -2321,7 +2321,7 @@
       },
       "thumbnailAsset": {
         "id": "24574e0c-8fc3-4c4a-890e-6de7f5b83445",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/TweNEJfvpis.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/TweNEJfvpis.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:56:41Z",
         "updatedAt": "2026-08-12T15:56:41Z"
@@ -2373,7 +2373,7 @@
       },
       "thumbnailAsset": {
         "id": "56465ee6-d0d2-4211-9ad4-2eaef89cd216",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/hP-d33Bb4M8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/hP-d33Bb4M8.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:57:11Z",
         "updatedAt": "2026-08-12T16:57:11Z"
@@ -2425,7 +2425,7 @@
       },
       "thumbnailAsset": {
         "id": "6ec0dec4-4d14-49db-b84a-969a762289f6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/ZA4RyvQNpeY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/ZA4RyvQNpeY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:57:27Z",
         "updatedAt": "2026-08-11T04:57:27Z"
@@ -2477,7 +2477,7 @@
       },
       "thumbnailAsset": {
         "id": "d998e78e-630a-490b-ac17-ae41e77f28a6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/kU0CjuUVQDw.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/kU0CjuUVQDw.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:57:41Z",
         "updatedAt": "2026-08-12T20:57:41Z"
@@ -2529,7 +2529,7 @@
       },
       "thumbnailAsset": {
         "id": "55afab8b-5125-4881-bc53-cf7db0a60d32",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/8cUZ-AV1c8I.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/8cUZ-AV1c8I.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:58:06Z",
         "updatedAt": "2026-08-11T07:58:06Z"
@@ -2581,7 +2581,7 @@
       },
       "thumbnailAsset": {
         "id": "476e6e87-2997-4b6f-b42d-e9addcc86de5",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/2wyF6L2_NW4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/2wyF6L2_NW4.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:58:39Z",
         "updatedAt": "2026-08-11T21:58:39Z"
@@ -2633,7 +2633,7 @@
       },
       "thumbnailAsset": {
         "id": "d301a172-a05e-4dff-96c5-993a2142b246",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/socOsrFXgMc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/socOsrFXgMc.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:58:56Z",
         "updatedAt": "2026-08-11T07:58:56Z"
@@ -2685,7 +2685,7 @@
       },
       "thumbnailAsset": {
         "id": "e2e0e191-d01c-49a3-83bd-7eefac7b65f6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/obieAPF1d0M.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/obieAPF1d0M.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:59:28Z",
         "updatedAt": "2026-08-11T18:59:28Z"
@@ -2737,7 +2737,7 @@
       },
       "thumbnailAsset": {
         "id": "668fe834-41ec-459b-bc0e-0e699aa0eff1",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/X2CKW0FLwoo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/X2CKW0FLwoo.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T02:59:53Z",
         "updatedAt": "2026-08-12T21:59:53Z"
@@ -2789,7 +2789,7 @@
       },
       "thumbnailAsset": {
         "id": "b706d4a1-1dba-4cb5-a4bb-87b296f6f9b9",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/BHtgdYvNGmg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/BHtgdYvNGmg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:00:53Z",
         "updatedAt": "2026-08-12T20:00:53Z"
@@ -2841,7 +2841,7 @@
       },
       "thumbnailAsset": {
         "id": "d73ac356-25a8-4174-8b5f-5adac9989499",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/6BDmRjRPDaY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/6BDmRjRPDaY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:01:52Z",
         "updatedAt": "2026-08-12T11:01:52Z"
@@ -2893,7 +2893,7 @@
       },
       "thumbnailAsset": {
         "id": "2c2de039-186f-474d-9881-956b87108036",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/uv6JE-Fv-x4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/uv6JE-Fv-x4.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:02:55Z",
         "updatedAt": "2026-08-11T15:02:55Z"
@@ -2945,7 +2945,7 @@
       },
       "thumbnailAsset": {
         "id": "5bcc56e5-1fa7-4e75-a15d-7e9a539a230f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/KiEErvcX_qo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/KiEErvcX_qo.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:03:56Z",
         "updatedAt": "2026-08-13T02:03:56Z"
@@ -2997,7 +2997,7 @@
       },
       "thumbnailAsset": {
         "id": "8561b5c1-c82c-432b-8157-1d388f3093cf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/eQClxT38HRo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/eQClxT38HRo.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:04:45Z",
         "updatedAt": "2026-08-12T06:04:45Z"
@@ -3049,7 +3049,7 @@
       },
       "thumbnailAsset": {
         "id": "f69d8c02-93ae-4f19-898c-1af3db63d439",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/2MD2AiKTLp8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/2MD2AiKTLp8.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:06:03Z",
         "updatedAt": "2026-08-12T16:06:03Z"
@@ -3101,7 +3101,7 @@
       },
       "thumbnailAsset": {
         "id": "e7dfbd12-1cd1-450e-a145-905287db4eb1",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/zoaA2lo9Nhg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/zoaA2lo9Nhg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:06:27Z",
         "updatedAt": "2026-08-12T20:06:27Z"
@@ -3153,7 +3153,7 @@
       },
       "thumbnailAsset": {
         "id": "5125c437-65cd-4ea6-b63a-df1c61745908",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/VeoACWts2F4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/VeoACWts2F4.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:06:56Z",
         "updatedAt": "2026-08-11T14:06:56Z"
@@ -3205,7 +3205,7 @@
       },
       "thumbnailAsset": {
         "id": "1b6bb5c7-6594-451e-83b9-5ce9404e14e2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/1LqiJvNCR6Y.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/1LqiJvNCR6Y.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:09:03Z",
         "updatedAt": "2026-08-11T10:09:03Z"
@@ -3257,7 +3257,7 @@
       },
       "thumbnailAsset": {
         "id": "33750a60-92ae-48ac-b77b-03688036f9ff",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/dHegYMGKvWY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/dHegYMGKvWY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:12:15Z",
         "updatedAt": "2026-08-12T08:12:15Z"
@@ -3309,7 +3309,7 @@
       },
       "thumbnailAsset": {
         "id": "529db2a3-135f-4308-a399-e84b1bfd505b",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/6tsCLtvYISI.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/6tsCLtvYISI.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:14:27Z",
         "updatedAt": "2026-08-11T15:14:27Z"
@@ -3361,7 +3361,7 @@
       },
       "thumbnailAsset": {
         "id": "d6cfc1f2-bf5f-4478-a0d7-30436bae4f41",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/4l24LRA51to.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/4l24LRA51to.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:14:38Z",
         "updatedAt": "2026-08-13T02:14:38Z"
@@ -3413,7 +3413,7 @@
       },
       "thumbnailAsset": {
         "id": "de42c7d5-547a-44a2-a0b9-0ec28ca654aa",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/8LnOXBrfisc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/8LnOXBrfisc.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:15:32Z",
         "updatedAt": "2026-08-11T08:15:32Z"
@@ -3465,7 +3465,7 @@
       },
       "thumbnailAsset": {
         "id": "3f3ce62b-01d9-4eff-a17e-41c1bfd80d25",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/YGJPYh713d0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/YGJPYh713d0.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:15:48Z",
         "updatedAt": "2026-08-12T15:15:48Z"
@@ -3517,7 +3517,7 @@
       },
       "thumbnailAsset": {
         "id": "cfd129fc-ae04-4396-a13f-062553537371",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/fuF-eI9FIuQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/fuF-eI9FIuQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:16:20Z",
         "updatedAt": "2026-08-11T18:16:20Z"
@@ -3569,7 +3569,7 @@
       },
       "thumbnailAsset": {
         "id": "c71713d6-b5e3-46f6-938a-0c80374a7d56",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/tUWi-U16JWk.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/tUWi-U16JWk.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:17:32Z",
         "updatedAt": "2026-08-11T23:17:32Z"
@@ -3621,7 +3621,7 @@
       },
       "thumbnailAsset": {
         "id": "47769259-d7a5-4c8f-8ac1-c8a7555fea73",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/sitZFYEspwU.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/sitZFYEspwU.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:18:21Z",
         "updatedAt": "2026-08-11T23:18:21Z"
@@ -3673,7 +3673,7 @@
       },
       "thumbnailAsset": {
         "id": "12bcd4eb-4d34-433f-9907-66d89145a1c6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/ycxWJcY2DdE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/ycxWJcY2DdE.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:19:02Z",
         "updatedAt": "2026-08-12T19:19:02Z"
@@ -3725,7 +3725,7 @@
       },
       "thumbnailAsset": {
         "id": "980f9265-f83e-40b3-bd55-3e9257b85321",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/KJdmTSbTCio.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/KJdmTSbTCio.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:19:31Z",
         "updatedAt": "2026-08-12T13:19:31Z"
@@ -3777,7 +3777,7 @@
       },
       "thumbnailAsset": {
         "id": "b1ff22e7-f2df-40c6-8775-5079c558401b",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/PXqRSNQrJhY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/PXqRSNQrJhY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:19:48Z",
         "updatedAt": "2026-08-11T08:19:48Z"
@@ -3829,7 +3829,7 @@
       },
       "thumbnailAsset": {
         "id": "ffc9f829-3263-470c-9ac8-4eb5e9bb22f5",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/aNaLQwkfwrg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/aNaLQwkfwrg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:20:16Z",
         "updatedAt": "2026-08-11T10:20:16Z"
@@ -3881,7 +3881,7 @@
       },
       "thumbnailAsset": {
         "id": "f6bbf3a6-5f56-48e1-bae6-096d88360884",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/piXHUUbE0SY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/piXHUUbE0SY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:20:50Z",
         "updatedAt": "2026-08-12T20:20:50Z"
@@ -3933,7 +3933,7 @@
       },
       "thumbnailAsset": {
         "id": "7c836e4e-fa2e-4ca0-8a65-627190cafe9a",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/fRlkHD1Vpxg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/fRlkHD1Vpxg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:21:10Z",
         "updatedAt": "2026-08-12T20:21:10Z"
@@ -3985,7 +3985,7 @@
       },
       "thumbnailAsset": {
         "id": "d6270ea0-de1d-4973-8bd1-b8585ecd5add",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/uMI8Sw4TcUo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/uMI8Sw4TcUo.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:21:29Z",
         "updatedAt": "2026-08-11T18:21:29Z"
@@ -4037,7 +4037,7 @@
       },
       "thumbnailAsset": {
         "id": "288f46e5-1ee5-45db-b563-9b53bbf5bbf2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/dPMxsuLXf8I.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/dPMxsuLXf8I.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:21:57Z",
         "updatedAt": "2026-08-11T18:21:57Z"
@@ -4089,7 +4089,7 @@
       },
       "thumbnailAsset": {
         "id": "583d345f-31d7-4e91-9ed6-2a009ca46b1f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/_xP7X_4IT5w.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/_xP7X_4IT5w.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:22:38Z",
         "updatedAt": "2026-08-11T14:22:38Z"
@@ -4141,7 +4141,7 @@
       },
       "thumbnailAsset": {
         "id": "3a2a32eb-951c-4da8-ad98-dab26b17b8da",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Dbcx2_MO0LM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Dbcx2_MO0LM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:23:06Z",
         "updatedAt": "2026-08-12T12:23:06Z"
@@ -4193,7 +4193,7 @@
       },
       "thumbnailAsset": {
         "id": "604fbb1f-380c-411e-be05-717413bc7940",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/PeiRt0yKOAQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/PeiRt0yKOAQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:23:54Z",
         "updatedAt": "2026-08-12T18:23:54Z"
@@ -4245,7 +4245,7 @@
       },
       "thumbnailAsset": {
         "id": "5283d5ee-0313-417d-a551-bfe37b3baa78",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/5XbQcMneLAI.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/5XbQcMneLAI.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:25:29Z",
         "updatedAt": "2026-08-13T01:25:29Z"
@@ -4297,7 +4297,7 @@
       },
       "thumbnailAsset": {
         "id": "7c832a4f-cc3f-4119-a3c5-acb167edeabf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/AjrLMOcz3PM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/AjrLMOcz3PM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:26:31Z",
         "updatedAt": "2026-08-11T06:26:31Z"
@@ -4349,7 +4349,7 @@
       },
       "thumbnailAsset": {
         "id": "f17d0068-cd61-4e6e-a9f2-d0042fbcd4ab",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/D8wIz74AuhI.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/D8wIz74AuhI.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:26:53Z",
         "updatedAt": "2026-08-11T03:26:53Z"
@@ -4401,7 +4401,7 @@
       },
       "thumbnailAsset": {
         "id": "29b3440f-5ada-4730-b49f-9c4f9e1b9f17",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/-6aiGzQ-rmE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/-6aiGzQ-rmE.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:27:27Z",
         "updatedAt": "2026-08-11T03:27:27Z"
@@ -4453,7 +4453,7 @@
       },
       "thumbnailAsset": {
         "id": "973ef547-83ba-4edc-b239-1a021725df54",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/RHpTh8a83Ig.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/RHpTh8a83Ig.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:28:10Z",
         "updatedAt": "2026-08-13T02:28:10Z"
@@ -4505,7 +4505,7 @@
       },
       "thumbnailAsset": {
         "id": "8df5d512-3604-442c-9daa-a21e3b52fb1e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/bh7jRjyIg5c.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/bh7jRjyIg5c.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:28:26Z",
         "updatedAt": "2026-08-12T10:28:26Z"
@@ -4557,7 +4557,7 @@
       },
       "thumbnailAsset": {
         "id": "4902b07b-85d2-4036-9e56-417ced225740",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/4x_nWB_KHmE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/4x_nWB_KHmE.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:29:14Z",
         "updatedAt": "2026-08-11T17:29:14Z"
@@ -4609,7 +4609,7 @@
       },
       "thumbnailAsset": {
         "id": "1cba3bf0-30bb-4384-bd06-3e0df1508e5d",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/eVu_F90CmSs.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/eVu_F90CmSs.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:29:43Z",
         "updatedAt": "2026-08-12T18:29:43Z"
@@ -4661,7 +4661,7 @@
       },
       "thumbnailAsset": {
         "id": "21caa45f-2469-4498-b7fe-956387b64bf6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/A3DK0YA9b6w.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/A3DK0YA9b6w.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:30:01Z",
         "updatedAt": "2026-08-13T03:30:01Z"
@@ -4713,7 +4713,7 @@
       },
       "thumbnailAsset": {
         "id": "f0a1aeb2-1bd0-4d3a-934e-5d87f749b1b4",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/EsKvci9YWgA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/EsKvci9YWgA.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:31:06Z",
         "updatedAt": "2026-08-11T22:31:06Z"
@@ -4765,7 +4765,7 @@
       },
       "thumbnailAsset": {
         "id": "6e16fef4-38be-4574-b492-3ca223a00fa8",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/ZMA7ak3x_HY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/ZMA7ak3x_HY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:31:55Z",
         "updatedAt": "2026-08-12T00:31:55Z"
@@ -4817,7 +4817,7 @@
       },
       "thumbnailAsset": {
         "id": "3e0e49f2-c571-4be9-97db-f7c1f0b49f04",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/ezIoCoY67Sk.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/ezIoCoY67Sk.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:32:32Z",
         "updatedAt": "2026-08-11T20:32:32Z"
@@ -4869,7 +4869,7 @@
       },
       "thumbnailAsset": {
         "id": "34b687ad-72f4-4af1-8a03-f63d8cd72365",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/rd9UrP-22cE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/rd9UrP-22cE.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:32:58Z",
         "updatedAt": "2026-08-13T00:32:58Z"
@@ -4921,7 +4921,7 @@
       },
       "thumbnailAsset": {
         "id": "887f125c-93a5-4f0b-8804-217d1f9260b0",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/wW9Mo3AEoWY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/wW9Mo3AEoWY.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:33:24Z",
         "updatedAt": "2026-08-12T16:33:24Z"
@@ -4973,7 +4973,7 @@
       },
       "thumbnailAsset": {
         "id": "c7daf8e5-e4ed-4c0d-a540-13967c0b7b28",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/fDTNNsXSA_E.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/fDTNNsXSA_E.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:34:05Z",
         "updatedAt": "2026-08-12T03:34:05Z"
@@ -5025,7 +5025,7 @@
       },
       "thumbnailAsset": {
         "id": "9a8e6bd7-284f-4870-b7da-ff58ff8ca8f8",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/YEANblVO0Z8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/YEANblVO0Z8.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:34:45Z",
         "updatedAt": "2026-08-12T11:34:45Z"
@@ -5077,7 +5077,7 @@
       },
       "thumbnailAsset": {
         "id": "0ec32edb-c7d6-49a2-8d0f-a2a38e143021",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/iod_1QcZNAM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/iod_1QcZNAM.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:35:01Z",
         "updatedAt": "2026-08-11T12:35:01Z"
@@ -5129,7 +5129,7 @@
       },
       "thumbnailAsset": {
         "id": "3d8a1fcf-ffc5-4722-8c49-ed1eaaa8e4fa",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/JhhxTJ71-wg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/JhhxTJ71-wg.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:35:41Z",
         "updatedAt": "2026-08-12T20:35:41Z"
@@ -5181,7 +5181,7 @@
       },
       "thumbnailAsset": {
         "id": "88813fb0-af67-465f-b571-2373b5bba2bf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/FDKHh105N8k.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/FDKHh105N8k.jpg",
         "status": "READY",
         "createdAt": "2026-08-11T03:35:53Z",
         "updatedAt": "2026-08-12T15:35:53Z"
@@ -5233,7 +5233,7 @@
       },
       "thumbnailAsset": {
         "id": "93fbfe2c-6359-4724-a6d6-21666004e3d6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/EsG9-vRw6pg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/EsG9-vRw6pg.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:32:27Z",
         "updatedAt": "2026-08-15T14:32:27Z"
@@ -5285,7 +5285,7 @@
       },
       "thumbnailAsset": {
         "id": "0cd89076-c509-4050-950a-11c2d27992c4",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/fj3LlrlIQQ8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/fj3LlrlIQQ8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:33:11Z",
         "updatedAt": "2026-08-15T14:33:11Z"
@@ -5337,7 +5337,7 @@
       },
       "thumbnailAsset": {
         "id": "6cf2943b-9258-4c44-aba7-ffc22749c6ee",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/G8ALDjzcn3Q.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/G8ALDjzcn3Q.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:33:43Z",
         "updatedAt": "2026-08-15T14:33:43Z"
@@ -5389,7 +5389,7 @@
       },
       "thumbnailAsset": {
         "id": "7ca572b0-3da2-46b0-abca-b6a895490f77",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/oef37gUkYsI.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/oef37gUkYsI.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:34:09Z",
         "updatedAt": "2026-08-15T14:34:09Z"
@@ -5441,7 +5441,7 @@
       },
       "thumbnailAsset": {
         "id": "a3c50eca-5fc2-4223-af7f-a64b9af3e894",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/AbRmT-cbYto.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/AbRmT-cbYto.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:34:36Z",
         "updatedAt": "2026-08-15T14:34:36Z"
@@ -5493,7 +5493,7 @@
       },
       "thumbnailAsset": {
         "id": "191b993b-56da-4ef6-ad0f-bc3d86e6b989",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/0nNk--bkBls.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/0nNk--bkBls.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:35:10Z",
         "updatedAt": "2026-08-15T14:35:10Z"
@@ -5545,7 +5545,7 @@
       },
       "thumbnailAsset": {
         "id": "544db1a7-a0d2-4658-9ea2-3891c547ed91",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/eCOb8zdBxV0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/eCOb8zdBxV0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:35:35Z",
         "updatedAt": "2026-08-15T14:35:35Z"
@@ -5597,7 +5597,7 @@
       },
       "thumbnailAsset": {
         "id": "37f66ba6-4193-48ec-9076-34b0c2471583",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Gx2PjS3kmaQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Gx2PjS3kmaQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:36:01Z",
         "updatedAt": "2026-08-15T14:36:01Z"
@@ -5649,7 +5649,7 @@
       },
       "thumbnailAsset": {
         "id": "29fd8f57-127a-434b-a626-ae4b3f49bdc2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/J1wnQs6--3E.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/J1wnQs6--3E.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:36:25Z",
         "updatedAt": "2026-08-15T14:36:25Z"
@@ -5701,7 +5701,7 @@
       },
       "thumbnailAsset": {
         "id": "72fb3338-4851-4eeb-915c-92a86df28c78",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/05eniKoJiss.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/05eniKoJiss.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:36:50Z",
         "updatedAt": "2026-08-15T14:36:50Z"
@@ -5753,7 +5753,7 @@
       },
       "thumbnailAsset": {
         "id": "d293bb69-19c8-4d92-adc9-3ede29e8ecc1",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/LMZzG7qJWm4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/LMZzG7qJWm4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:37:19Z",
         "updatedAt": "2026-08-15T14:37:19Z"
@@ -5805,7 +5805,7 @@
       },
       "thumbnailAsset": {
         "id": "b1989819-ccaf-45c4-8853-c3fd49fcd0dd",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/o0jPNdUnHO8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/o0jPNdUnHO8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:37:52Z",
         "updatedAt": "2026-08-15T14:37:52Z"
@@ -5857,7 +5857,7 @@
       },
       "thumbnailAsset": {
         "id": "93c756b7-07f8-4d43-ae1c-99c9bff27405",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/OrRs3fv06x4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/OrRs3fv06x4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:38:41Z",
         "updatedAt": "2026-08-15T14:38:41Z"
@@ -5909,7 +5909,7 @@
       },
       "thumbnailAsset": {
         "id": "480d1005-370a-4f77-a656-2e97d4ca19e3",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/zkhgzyKBpek.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/zkhgzyKBpek.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:39:04Z",
         "updatedAt": "2026-08-15T14:39:04Z"
@@ -5961,7 +5961,7 @@
       },
       "thumbnailAsset": {
         "id": "80fe5a77-3fea-4ead-95ec-350e75e81d2a",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/7OeTedPt3MQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/7OeTedPt3MQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:39:32Z",
         "updatedAt": "2026-08-15T14:39:32Z"
@@ -6013,7 +6013,7 @@
       },
       "thumbnailAsset": {
         "id": "a08007d0-48a9-41b0-8d42-3dadebcbbe18",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Q734DscNgvw.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Q734DscNgvw.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:40:07Z",
         "updatedAt": "2026-08-15T14:40:07Z"
@@ -6065,7 +6065,7 @@
       },
       "thumbnailAsset": {
         "id": "72ac4565-2833-49f8-bd75-f1fcddf96a3f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/UQxLWAl8uWM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/UQxLWAl8uWM.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:40:41Z",
         "updatedAt": "2026-08-15T14:40:41Z"
@@ -6117,7 +6117,7 @@
       },
       "thumbnailAsset": {
         "id": "e531cbc0-ce78-4f99-a738-e6bc1aadb8ed",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/CY13g_QjHok.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/CY13g_QjHok.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:41:12Z",
         "updatedAt": "2026-08-15T14:41:12Z"
@@ -6169,7 +6169,7 @@
       },
       "thumbnailAsset": {
         "id": "097c5c97-08ed-44cd-84d7-fd0baf79afcf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/x4SVG4aD-_Q.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/x4SVG4aD-_Q.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:41:43Z",
         "updatedAt": "2026-08-15T14:41:43Z"
@@ -6221,7 +6221,7 @@
       },
       "thumbnailAsset": {
         "id": "091f8b67-0abd-4a08-89b0-2050d3c92f61",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/cdmTt-VddoI.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/cdmTt-VddoI.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:42:11Z",
         "updatedAt": "2026-08-15T14:42:11Z"
@@ -6273,7 +6273,7 @@
       },
       "thumbnailAsset": {
         "id": "418d755f-0450-4cc5-846c-9b8879010ec2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/PVOBXRmcDMU.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/PVOBXRmcDMU.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:42:40Z",
         "updatedAt": "2026-08-15T14:42:40Z"
@@ -6325,7 +6325,7 @@
       },
       "thumbnailAsset": {
         "id": "a5dcf308-8f90-4a21-97f7-9b44d475d5f4",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/xiphShZ6rxY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/xiphShZ6rxY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:43:12Z",
         "updatedAt": "2026-08-15T14:43:12Z"
@@ -6377,7 +6377,7 @@
       },
       "thumbnailAsset": {
         "id": "14889ac5-0378-4fc0-98a4-91c2749f6c15",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/lLRacgn58_0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/lLRacgn58_0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:43:34Z",
         "updatedAt": "2026-08-15T14:43:34Z"
@@ -6429,7 +6429,7 @@
       },
       "thumbnailAsset": {
         "id": "c548fd19-f046-4a6f-aa7f-71873a5aeb21",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/8W6w4Y_0se0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/8W6w4Y_0se0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:44:15Z",
         "updatedAt": "2026-08-15T14:44:15Z"
@@ -6481,7 +6481,7 @@
       },
       "thumbnailAsset": {
         "id": "2feb3e71-dd76-4159-b7f5-893ea8f5a925",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/LHKjw1FQOtY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/LHKjw1FQOtY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:44:42Z",
         "updatedAt": "2026-08-15T14:44:42Z"
@@ -6533,7 +6533,7 @@
       },
       "thumbnailAsset": {
         "id": "c586a319-0ee7-4571-9a99-ad688b766ac2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/tTnyvWyhUo8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/tTnyvWyhUo8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:45:12Z",
         "updatedAt": "2026-08-15T14:45:12Z"
@@ -6585,7 +6585,7 @@
       },
       "thumbnailAsset": {
         "id": "dc5db495-15b1-4db2-bd0a-83ceaa5f79d2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/dl2yTWZhw3M.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/dl2yTWZhw3M.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:45:46Z",
         "updatedAt": "2026-08-15T14:45:46Z"
@@ -6637,7 +6637,7 @@
       },
       "thumbnailAsset": {
         "id": "54367f4d-6714-4dbf-bba3-8c7ad4837149",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/TqVMySlz360.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/TqVMySlz360.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:46:19Z",
         "updatedAt": "2026-08-15T14:46:19Z"
@@ -6689,7 +6689,7 @@
       },
       "thumbnailAsset": {
         "id": "601f8fca-3ad7-4038-91b1-31310024ff91",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/MIq87i1DNF0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/MIq87i1DNF0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:46:51Z",
         "updatedAt": "2026-08-15T14:46:51Z"
@@ -6741,7 +6741,7 @@
       },
       "thumbnailAsset": {
         "id": "383c4db5-3b17-4fd3-8ec5-ce4d55400111",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/43uKqJU88a0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/43uKqJU88a0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:47:23Z",
         "updatedAt": "2026-08-15T14:47:23Z"
@@ -6793,7 +6793,7 @@
       },
       "thumbnailAsset": {
         "id": "05963b1e-27f6-4e3b-af81-22684def6440",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/fDGDou22ICc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/fDGDou22ICc.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:47:55Z",
         "updatedAt": "2026-08-15T14:47:55Z"
@@ -6845,7 +6845,7 @@
       },
       "thumbnailAsset": {
         "id": "c6f4701d-5614-4c72-ac7d-f782c0dfa8ff",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/vQplqqxmg_k.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/vQplqqxmg_k.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:48:17Z",
         "updatedAt": "2026-08-15T14:48:17Z"
@@ -6897,7 +6897,7 @@
       },
       "thumbnailAsset": {
         "id": "f57360cd-cbdb-41fd-9002-937202453d59",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Db6s59X14V4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Db6s59X14V4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:48:39Z",
         "updatedAt": "2026-08-15T14:48:39Z"
@@ -6949,7 +6949,7 @@
       },
       "thumbnailAsset": {
         "id": "1a8e8aad-836b-4387-b942-08c90519ba47",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/zhEucoP8dmE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/zhEucoP8dmE.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:49:07Z",
         "updatedAt": "2026-08-15T14:49:07Z"
@@ -7001,7 +7001,7 @@
       },
       "thumbnailAsset": {
         "id": "0ce199f6-4a75-48e1-8adf-b616a3fc6a0e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/UnrMdibyd24.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/UnrMdibyd24.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:49:26Z",
         "updatedAt": "2026-08-15T14:49:26Z"
@@ -7053,7 +7053,7 @@
       },
       "thumbnailAsset": {
         "id": "7ee4c084-3f49-4695-bcb9-5c591273d2d8",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/j6D-YRGrEOk.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/j6D-YRGrEOk.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:49:44Z",
         "updatedAt": "2026-08-15T14:49:44Z"
@@ -7105,7 +7105,7 @@
       },
       "thumbnailAsset": {
         "id": "7eec8815-727f-4b9d-9c9c-8d9bf1fb1665",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/BH2E8xUlArs.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/BH2E8xUlArs.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:50:03Z",
         "updatedAt": "2026-08-15T14:50:03Z"
@@ -7157,7 +7157,7 @@
       },
       "thumbnailAsset": {
         "id": "003f8dcf-227b-4c2f-bd29-e311561399cf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/x066e1hQ2FU.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/x066e1hQ2FU.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:50:25Z",
         "updatedAt": "2026-08-15T14:50:25Z"
@@ -7209,7 +7209,7 @@
       },
       "thumbnailAsset": {
         "id": "4294f566-af10-4904-8f6e-41280b3af02c",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Fi5yjfTAVQY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Fi5yjfTAVQY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:50:42Z",
         "updatedAt": "2026-08-15T14:50:42Z"
@@ -7261,7 +7261,7 @@
       },
       "thumbnailAsset": {
         "id": "a57583b8-e5c7-463a-928b-4dd9fb13556b",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/V7n4I6lVDqA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/V7n4I6lVDqA.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:51:28Z",
         "updatedAt": "2026-08-15T14:51:28Z"
@@ -7313,7 +7313,7 @@
       },
       "thumbnailAsset": {
         "id": "a273382d-da80-476f-bea2-6117f41bb85d",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/aHZlzdwFdU8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/aHZlzdwFdU8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:52:08Z",
         "updatedAt": "2026-08-15T14:52:08Z"
@@ -7365,7 +7365,7 @@
       },
       "thumbnailAsset": {
         "id": "28c37b79-9271-46af-9589-2c84f814ff29",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/f39hf2ikq_M.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/f39hf2ikq_M.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:52:39Z",
         "updatedAt": "2026-08-15T14:52:39Z"
@@ -7417,7 +7417,7 @@
       },
       "thumbnailAsset": {
         "id": "dca99bad-5620-4757-87be-0b332015a9fe",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/5V_WW2tpk_w.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/5V_WW2tpk_w.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:53:16Z",
         "updatedAt": "2026-08-15T14:53:16Z"
@@ -7469,7 +7469,7 @@
       },
       "thumbnailAsset": {
         "id": "044ddcb8-15f0-49b5-bf49-3af2f1807564",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/u8Kck0t_xS4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/u8Kck0t_xS4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:53:58Z",
         "updatedAt": "2026-08-15T14:53:58Z"
@@ -7521,7 +7521,7 @@
       },
       "thumbnailAsset": {
         "id": "078f7fe9-4a2d-40b8-ba77-531fa5548285",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/L2nPq_moJpA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/L2nPq_moJpA.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:54:20Z",
         "updatedAt": "2026-08-15T14:54:20Z"
@@ -7573,7 +7573,7 @@
       },
       "thumbnailAsset": {
         "id": "c0bd2151-cb92-4c94-905f-27ab35f160ab",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/NqAUNIaRPy8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/NqAUNIaRPy8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:55:12Z",
         "updatedAt": "2026-08-15T14:55:12Z"
@@ -7625,7 +7625,7 @@
       },
       "thumbnailAsset": {
         "id": "b75ef15c-04d4-4f59-862c-e924c33db041",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/a2k9Z2H7PbQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/a2k9Z2H7PbQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:56:10Z",
         "updatedAt": "2026-08-15T14:56:10Z"
@@ -7677,7 +7677,7 @@
       },
       "thumbnailAsset": {
         "id": "8e4edd59-a6bb-469c-80b3-a180c8c5cefd",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/vFrknrthJBE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/vFrknrthJBE.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:57:00Z",
         "updatedAt": "2026-08-15T14:57:00Z"
@@ -7729,7 +7729,7 @@
       },
       "thumbnailAsset": {
         "id": "98760e52-477b-4160-855a-84b8ea33144b",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/sNLMCJSdl4s.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/sNLMCJSdl4s.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:57:45Z",
         "updatedAt": "2026-08-15T14:57:45Z"
@@ -7781,7 +7781,7 @@
       },
       "thumbnailAsset": {
         "id": "f3f8efe2-cd88-48f1-bfa3-1143ff202b98",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/zTCe18O9x7U.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/zTCe18O9x7U.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:58:16Z",
         "updatedAt": "2026-08-15T14:58:16Z"
@@ -7833,7 +7833,7 @@
       },
       "thumbnailAsset": {
         "id": "a577315b-2aac-4b6f-9cc5-67d345a23c64",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/oVv-blxTmzw.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/oVv-blxTmzw.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:58:45Z",
         "updatedAt": "2026-08-15T14:58:45Z"
@@ -7885,7 +7885,7 @@
       },
       "thumbnailAsset": {
         "id": "7ca034ac-1dbd-4505-aa6b-99b9fb57aeb6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/t4IfEGlSkzo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/t4IfEGlSkzo.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:59:09Z",
         "updatedAt": "2026-08-15T14:59:09Z"
@@ -7937,7 +7937,7 @@
       },
       "thumbnailAsset": {
         "id": "5490f19f-dcba-4b81-8a6f-f3a318b9190a",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/JBHrVWQWPgo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/JBHrVWQWPgo.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T14:59:33Z",
         "updatedAt": "2026-08-15T14:59:33Z"
@@ -7989,7 +7989,7 @@
       },
       "thumbnailAsset": {
         "id": "2fd24df4-a2f9-4fec-aa28-e6a7bdb60f17",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/PsPAt3ilXrw.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/PsPAt3ilXrw.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:00:03Z",
         "updatedAt": "2026-08-15T15:00:03Z"
@@ -8041,7 +8041,7 @@
       },
       "thumbnailAsset": {
         "id": "93aa0bc9-8de9-455e-b8b6-0a280072ad0a",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/wLTWGndRm8E.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/wLTWGndRm8E.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:00:40Z",
         "updatedAt": "2026-08-15T15:00:40Z"
@@ -8093,7 +8093,7 @@
       },
       "thumbnailAsset": {
         "id": "899fd8ef-d880-4aa4-8d66-7f855aaf876f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/JiSHWEsR04c.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/JiSHWEsR04c.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:01:05Z",
         "updatedAt": "2026-08-15T15:01:05Z"
@@ -8145,7 +8145,7 @@
       },
       "thumbnailAsset": {
         "id": "e2945c33-9729-429e-afd3-3e9c9a855ecb",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/W2eTvNqb0s8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/W2eTvNqb0s8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:01:30Z",
         "updatedAt": "2026-08-15T15:01:30Z"
@@ -8197,7 +8197,7 @@
       },
       "thumbnailAsset": {
         "id": "349966b1-16db-4d6b-907f-e6c6a1daaf0f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/D09QkQ8Cyow.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/D09QkQ8Cyow.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:01:57Z",
         "updatedAt": "2026-08-15T15:01:57Z"
@@ -8249,7 +8249,7 @@
       },
       "thumbnailAsset": {
         "id": "3141f66d-d850-4bae-88d5-5750fc824e81",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/tG7C6HO9x_g.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/tG7C6HO9x_g.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:03:00Z",
         "updatedAt": "2026-08-15T15:03:00Z"
@@ -8301,7 +8301,7 @@
       },
       "thumbnailAsset": {
         "id": "65866ed1-654f-49d8-b5a5-edef7156557e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/0u1pWplwpc8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/0u1pWplwpc8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:03:22Z",
         "updatedAt": "2026-08-15T15:03:22Z"
@@ -8353,7 +8353,7 @@
       },
       "thumbnailAsset": {
         "id": "2b90c191-9936-4ffd-a9f2-661922d4a126",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/JT19o7Ldzoc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/JT19o7Ldzoc.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:04:01Z",
         "updatedAt": "2026-08-15T15:04:01Z"
@@ -8405,7 +8405,7 @@
       },
       "thumbnailAsset": {
         "id": "47c9a6c3-2c1b-46d8-bb53-09f6d624f683",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/QmfnnG91H9A.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/QmfnnG91H9A.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:04:33Z",
         "updatedAt": "2026-08-15T15:04:33Z"
@@ -8457,7 +8457,7 @@
       },
       "thumbnailAsset": {
         "id": "50a6a695-34d7-45ee-81f5-d708ea21092c",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/wyPMBTTm7bc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/wyPMBTTm7bc.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:05:11Z",
         "updatedAt": "2026-08-15T15:05:11Z"
@@ -8509,7 +8509,7 @@
       },
       "thumbnailAsset": {
         "id": "6c3aae39-5bf2-4bd3-80b0-62fba50c6708",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/6ElF7eTJJCY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/6ElF7eTJJCY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:05:48Z",
         "updatedAt": "2026-08-15T15:05:48Z"
@@ -8561,7 +8561,7 @@
       },
       "thumbnailAsset": {
         "id": "6a62c965-17ac-4563-abfa-6a12ac181cb3",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/3A81DTnlRBs.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/3A81DTnlRBs.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:06:12Z",
         "updatedAt": "2026-08-15T15:06:12Z"
@@ -8613,7 +8613,7 @@
       },
       "thumbnailAsset": {
         "id": "298da45c-1960-4a8d-a281-22cefb239282",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/VqBRHig7bR4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/VqBRHig7bR4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:06:37Z",
         "updatedAt": "2026-08-15T15:06:37Z"
@@ -8665,7 +8665,7 @@
       },
       "thumbnailAsset": {
         "id": "4640ed62-1cc8-46e7-b547-4567020b1d8b",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/wM1R6Watk6I.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/wM1R6Watk6I.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:07:03Z",
         "updatedAt": "2026-08-15T15:07:03Z"
@@ -8717,7 +8717,7 @@
       },
       "thumbnailAsset": {
         "id": "a9cc7012-16a2-4009-9345-3daa99356bb6",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/28_DXf9HVmY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/28_DXf9HVmY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:07:26Z",
         "updatedAt": "2026-08-15T15:07:26Z"
@@ -8769,7 +8769,7 @@
       },
       "thumbnailAsset": {
         "id": "927b4f3f-5420-4d91-a70b-f1ee3b6da8d7",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/D2J4DIsuBzA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/D2J4DIsuBzA.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:07:51Z",
         "updatedAt": "2026-08-15T15:07:51Z"
@@ -8821,7 +8821,7 @@
       },
       "thumbnailAsset": {
         "id": "35d3845f-0f74-4107-b570-9cebaaf88729",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/XX5NbJTKPmc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/XX5NbJTKPmc.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:08:15Z",
         "updatedAt": "2026-08-15T15:08:15Z"
@@ -8873,7 +8873,7 @@
       },
       "thumbnailAsset": {
         "id": "bd613e3d-4c09-4fef-9ef4-2681cf47f592",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/rLhWA-mHLgo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/rLhWA-mHLgo.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:09:06Z",
         "updatedAt": "2026-08-15T15:09:06Z"
@@ -8925,7 +8925,7 @@
       },
       "thumbnailAsset": {
         "id": "9508df4e-2d67-422f-98a8-a8d55d135166",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/CMeX8xNK_Vo.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/CMeX8xNK_Vo.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:10:45Z",
         "updatedAt": "2026-08-15T15:10:45Z"
@@ -8977,7 +8977,7 @@
       },
       "thumbnailAsset": {
         "id": "af2fa7a1-5b18-46f4-b047-248ed12eae00",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Z9Xujt7NLFU.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Z9Xujt7NLFU.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:11:13Z",
         "updatedAt": "2026-08-15T15:11:13Z"
@@ -9029,7 +9029,7 @@
       },
       "thumbnailAsset": {
         "id": "ee073609-d3b9-4dca-8873-1702e24f854a",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/GZVZDmudIJA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/GZVZDmudIJA.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:11:34Z",
         "updatedAt": "2026-08-15T15:11:34Z"
@@ -9081,7 +9081,7 @@
       },
       "thumbnailAsset": {
         "id": "2c9de016-857e-4efc-8d88-d39d2047d139",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/G3YqO8ua8zA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/G3YqO8ua8zA.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:12:17Z",
         "updatedAt": "2026-08-15T15:12:17Z"
@@ -9133,7 +9133,7 @@
       },
       "thumbnailAsset": {
         "id": "38366b38-4ef1-4cc5-9be7-103449a0c7b2",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/sIa0bmW2VRM.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/sIa0bmW2VRM.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:12:56Z",
         "updatedAt": "2026-08-15T15:12:56Z"
@@ -9185,7 +9185,7 @@
       },
       "thumbnailAsset": {
         "id": "feeae995-5330-4730-8a62-13b1c62ac10e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/odJvPyrH5n4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/odJvPyrH5n4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:13:54Z",
         "updatedAt": "2026-08-15T15:13:54Z"
@@ -9237,7 +9237,7 @@
       },
       "thumbnailAsset": {
         "id": "435da7f9-e041-49e9-b9be-242b4248c7ca",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/auHl5yy8Bmw.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/auHl5yy8Bmw.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:14:19Z",
         "updatedAt": "2026-08-15T15:14:19Z"
@@ -9289,7 +9289,7 @@
       },
       "thumbnailAsset": {
         "id": "0bacc126-d33d-4e4e-8c8e-6a00f393c83d",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/6SLCkSf4vSY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/6SLCkSf4vSY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:15:07Z",
         "updatedAt": "2026-08-15T15:15:07Z"
@@ -9341,7 +9341,7 @@
       },
       "thumbnailAsset": {
         "id": "2927473d-b233-41b8-b036-588850144a1d",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/TzpeLcA50Vk.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/TzpeLcA50Vk.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:16:08Z",
         "updatedAt": "2026-08-15T15:16:08Z"
@@ -9393,7 +9393,7 @@
       },
       "thumbnailAsset": {
         "id": "956b4111-29ac-42c5-841b-dbc535cb6448",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/iOq20U6sg-k.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/iOq20U6sg-k.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:16:33Z",
         "updatedAt": "2026-08-15T15:16:33Z"
@@ -9445,7 +9445,7 @@
       },
       "thumbnailAsset": {
         "id": "3e77568a-6b2e-47f9-b46f-03a17c92a971",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/1j_R6LBx6lQ.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/1j_R6LBx6lQ.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:17:03Z",
         "updatedAt": "2026-08-15T15:17:03Z"
@@ -9497,7 +9497,7 @@
       },
       "thumbnailAsset": {
         "id": "69976d30-6ffc-4f5f-af44-7c021a8f9327",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/uBgvjJZZwTs.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/uBgvjJZZwTs.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:17:44Z",
         "updatedAt": "2026-08-15T15:17:44Z"
@@ -9549,7 +9549,7 @@
       },
       "thumbnailAsset": {
         "id": "eb59a727-f0f0-446f-b228-9d17c34e0de8",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/WusQKdeH_Gg.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/WusQKdeH_Gg.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:18:31Z",
         "updatedAt": "2026-08-15T15:18:31Z"
@@ -9601,7 +9601,7 @@
       },
       "thumbnailAsset": {
         "id": "f77200d4-4240-479d-a8e5-2e9065187531",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/2OW9-ezi54Q.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/2OW9-ezi54Q.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:19:18Z",
         "updatedAt": "2026-08-15T15:19:18Z"
@@ -9653,7 +9653,7 @@
       },
       "thumbnailAsset": {
         "id": "05446cf1-df45-4042-8920-41a355b660cf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/Z387Y1ccREU.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/Z387Y1ccREU.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:20:22Z",
         "updatedAt": "2026-08-15T15:20:22Z"
@@ -9705,7 +9705,7 @@
       },
       "thumbnailAsset": {
         "id": "671c4c60-e3c9-4e53-a3fe-00ce4af2c109",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/nRbvFhFMopE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/nRbvFhFMopE.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:20:47Z",
         "updatedAt": "2026-08-15T15:20:47Z"
@@ -9757,7 +9757,7 @@
       },
       "thumbnailAsset": {
         "id": "9046d177-4517-4364-9f5d-8ce1fca5f68f",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/1QdckM5bKLY.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/1QdckM5bKLY.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:21:17Z",
         "updatedAt": "2026-08-15T15:21:17Z"
@@ -9809,7 +9809,7 @@
       },
       "thumbnailAsset": {
         "id": "7c286f2e-86fc-4a84-888b-e49a4a47015e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/mY5RaHAie7U.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/mY5RaHAie7U.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:21:50Z",
         "updatedAt": "2026-08-15T15:21:50Z"
@@ -9861,7 +9861,7 @@
       },
       "thumbnailAsset": {
         "id": "ad3cd828-4766-40dc-9b37-86eb80e51684",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/t_bsG2nJsb0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/t_bsG2nJsb0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:22:38Z",
         "updatedAt": "2026-08-15T15:22:38Z"
@@ -9913,7 +9913,7 @@
       },
       "thumbnailAsset": {
         "id": "652d6869-5bf1-475f-bf93-d573fc2b1ecf",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/4lkQxGwUdnE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/4lkQxGwUdnE.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:23:23Z",
         "updatedAt": "2026-08-15T15:23:23Z"
@@ -9965,7 +9965,7 @@
       },
       "thumbnailAsset": {
         "id": "44760b10-44f3-4203-9543-a178bfb6412b",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/6EjVHLFQtP8.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/6EjVHLFQtP8.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:23:55Z",
         "updatedAt": "2026-08-15T15:23:55Z"
@@ -10017,7 +10017,7 @@
       },
       "thumbnailAsset": {
         "id": "630a3074-863c-48c3-8d6c-517a104018a8",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/3TG46Q-ai3I.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/3TG46Q-ai3I.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:24:41Z",
         "updatedAt": "2026-08-15T15:24:41Z"
@@ -10069,7 +10069,7 @@
       },
       "thumbnailAsset": {
         "id": "10c6a331-373a-49e0-a35e-7dd37b8b5531",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/c-7r8JJXqpc.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/c-7r8JJXqpc.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:25:08Z",
         "updatedAt": "2026-08-15T15:25:08Z"
@@ -10121,7 +10121,7 @@
       },
       "thumbnailAsset": {
         "id": "1786857e-0967-4c40-b334-99c7ccbc6d9e",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/8L-r6WlDbNA.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/8L-r6WlDbNA.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:25:34Z",
         "updatedAt": "2026-08-15T15:25:34Z"
@@ -10173,7 +10173,7 @@
       },
       "thumbnailAsset": {
         "id": "74b7625a-3f96-4ec6-a6be-f5ee302efc75",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/XaYPH-DX7D0.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/XaYPH-DX7D0.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:25:58Z",
         "updatedAt": "2026-08-15T15:25:58Z"
@@ -10225,7 +10225,7 @@
       },
       "thumbnailAsset": {
         "id": "a4ac56eb-7736-45e0-8293-35dd7e0e1951",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/-Os_BdwuNZ4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/-Os_BdwuNZ4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:26:35Z",
         "updatedAt": "2026-08-15T15:26:35Z"
@@ -10277,7 +10277,7 @@
       },
       "thumbnailAsset": {
         "id": "f0dc9da2-aecd-4a28-88e6-589bc20cacfb",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/CXH2pNnBdnE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/CXH2pNnBdnE.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:27:31Z",
         "updatedAt": "2026-08-15T15:27:31Z"
@@ -10329,7 +10329,7 @@
       },
       "thumbnailAsset": {
         "id": "cc51c099-0391-4839-9a40-d5a2b264b807",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/0EdYTffoPTE.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/0EdYTffoPTE.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:28:30Z",
         "updatedAt": "2026-08-15T15:28:30Z"
@@ -10381,7 +10381,7 @@
       },
       "thumbnailAsset": {
         "id": "f5ac09f2-f5ba-4b50-9394-c3ab81d21bce",
-        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbs/rJombruh7N4.jpg",
+        "url": "https://s3-hcm-r2.s3cloud.vn/zvideo-media/thumbnails/rJombruh7N4.jpg",
         "status": "READY",
         "createdAt": "2026-08-15T15:29:11Z",
         "updatedAt": "2026-08-15T15:29:11Z"

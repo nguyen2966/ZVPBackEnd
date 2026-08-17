@@ -22,7 +22,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 BASE_DIR = Path(__file__).resolve().parent
 HLS_DIR = BASE_DIR / "public_v2" / "hls"
-THUMB_DIR = BASE_DIR / "public_v2" / "thumbs"
+THUMB_DIR = BASE_DIR / "public_v2" / "thumbnails"
 
 HLS_CONTENT_TYPE = "application/vnd.apple.mpegurl"
 VIDEO_CONTENT_TYPE = "video/mp4"
@@ -85,7 +85,7 @@ def public_url(settings: S3Settings, key: str) -> str:
 def build_asset_urls(settings: S3Settings, video_id: str) -> dict[str, str]:
     return {
         "hls_url": public_url(settings, f"hls/{video_id}/master.m3u8"),
-        "thumbnail_url": public_url(settings, f"thumbs/{video_id}.jpg"),
+        "thumbnail_url": public_url(settings, f"thumbnails/{video_id}.jpg"),
     }
 
 
@@ -107,7 +107,7 @@ def video_upload_plan(video_id: str) -> list[tuple[Path, str, dict[str, str]]]:
     for segment in sorted(video_dir.glob("*/*.mp4dv")):
         rel = segment.relative_to(video_dir).as_posix()
         plan.append(upload_spec(segment, f"hls/{video_id}/{rel}", VIDEO_CONTENT_TYPE, IMMUTABLE_CACHE))
-    plan.append(upload_spec(thumb, f"thumbs/{video_id}.jpg", IMAGE_CONTENT_TYPE, IMMUTABLE_CACHE))
+    plan.append(upload_spec(thumb, f"thumbnails/{video_id}.jpg", IMAGE_CONTENT_TYPE, IMMUTABLE_CACHE))
     for playlist in sorted(video_dir.glob("*/index.m3u8")):
         rel = playlist.relative_to(video_dir).as_posix()
         plan.append(upload_spec(playlist, f"hls/{video_id}/{rel}", HLS_CONTENT_TYPE, PLAYLIST_CACHE))
@@ -161,6 +161,14 @@ def verify_video(video_id: str) -> None:
     if master.get("ContentType") != HLS_CONTENT_TYPE:
         raise RuntimeError(f"Content-Type master không đúng: {master.get('ContentType')}")
 
+    thumbnail_key = f"thumbnails/{video_id}.jpg"
+    thumbnail = client.head_object(Bucket=settings.bucket, Key=thumbnail_key)
+    if thumbnail.get("ContentType") != IMAGE_CONTENT_TYPE or int(thumbnail.get("ContentLength", 0)) <= 0:
+        raise RuntimeError(
+            f"Thumbnail không hợp lệ: Content-Type={thumbnail.get('ContentType')}, "
+            f"Content-Length={thumbnail.get('ContentLength')}"
+        )
+
     segment_keys = [key for _, key, _ in video_upload_plan(video_id) if key.endswith(".mp4dv")]
     if not segment_keys:
         raise RuntimeError("Không tìm thấy rendition .mp4dv để kiểm tra")
@@ -172,7 +180,10 @@ def verify_video(video_id: str) -> None:
     status = response.get("ResponseMetadata", {}).get("HTTPStatusCode")
     if status != 206 or not response.get("ContentRange"):
         raise RuntimeError(f"Range GET không đạt: status={status}, ContentRange={response.get('ContentRange')}")
-    print(f"Verify OK: master Content-Type đúng, Range GET={status}, {response['ContentRange']}")
+    print(
+        f"Verify OK: master và thumbnail đúng metadata, "
+        f"Range GET={status}, {response['ContentRange']}"
+    )
 
 
 def main() -> None:
