@@ -266,6 +266,14 @@ def main() -> int:
     check("payload có đủ 4 nhóm key",
           {"feed", "ranking", "sync", "cache"} <= set(cfg.get("payload", {})), json.dumps(cfg)[:200])
     check("ranking.weights có mặt", "weights" in cfg["payload"]["ranking"])
+    ranking = cfg["payload"]["ranking"]
+    check("ranking.enabled dùng positiveChannel/positiveCategory",
+          {"positiveChannel", "positiveCategory"} <= set(ranking["enabled"]))
+    check("ranking.weights dùng positiveChannel/positiveCategory",
+          {"positiveChannel", "positiveCategory"} <= set(ranking["weights"]))
+    check("ranking không còn key mostWatched*",
+          not any(key.startswith("mostWatched")
+                  for key in [*ranking["enabled"], *ranking["weights"]]))
     etag = r.headers["etag"]
     r304 = client.get("/api/config", headers={**auth_a, "if-none-match": etag})
     check("If-None-Match -> 304", r304.status_code == 304, f"got {r304.status_code}")

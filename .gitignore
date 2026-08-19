@@ -6,3 +6,4 @@ downloads/
 downloads_v2/
 __pycache__/
 .vscode/
+.venv/

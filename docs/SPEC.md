@@ -171,9 +171,15 @@ create index reactions_counts  on reactions (video_id, type) where active;  -- r
 create table app_config (
  id         serial primary key,
  version    bigint not null,
- payload    jsonb  not null,              -- server coi là opaque; shape ở mục 5
  enabled    boolean not null default false,
  updated_at timestamptz not null default now()
+);
+
+create table app_config_entries (
+ config_id int   not null references app_config(id) on delete cascade,
+ key       text  not null,
+ value     jsonb not null,
+ primary key (config_id, key)
 );
 
 
@@ -564,9 +570,9 @@ nguyên nhân của một độ trễ bí ẩn.
 ## 5. Shape của config payload
 
 
-Server coi `payload` là opaque `jsonb` — không validate nội dung, không parse. Nhưng bundle default
-phải được seed đúng shape dưới đây, vì client đọc theo đúng các key này (thiếu key nào thì client rơi
-về default compile-in của nó, không crash).
+Server lắp `payload` từ các row `app_config_entries` của bundle đang bật. Mỗi `key` là một
+đường dẫn dotted (ví dụ `ranking.weights.positiveChannel`) và `value` là `jsonb`. Client vẫn nhận
+đúng shape lồng nhau dưới đây; thiếu key nào thì client rơi về default compile-in, không crash.
 
 
 ```json
@@ -575,10 +581,10 @@ về default compile-in của nó, không crash).
  "ranking": {
    "positiveCompletionRate": 0.6,
    "minPlaybackMsForSession": 0,
-   "enabled": ["likedChannel", "dislikedChannel", "mostWatchedChannel",
-               "likedCategory", "dislikedCategory", "mostWatchedCategory"],
-   "weights": { "likedChannel":  1.0, "dislikedChannel":  -1.5, "mostWatchedChannel":  0.8,
-                "likedCategory": 0.6, "dislikedCategory": -0.8, "mostWatchedCategory": 0.5 }
+   "enabled": ["likedChannel", "dislikedChannel", "positiveChannel",
+               "likedCategory", "dislikedCategory", "positiveCategory"],
+   "weights": { "likedChannel":  1.0, "dislikedChannel":  -1.5, "positiveChannel":  0.8,
+                "likedCategory": 0.6, "dislikedCategory": -0.8, "positiveCategory": 0.5 }
  },
  "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
  "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
@@ -589,14 +595,18 @@ về default compile-in của nó, không crash).
 
 `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client** — server chỉ chứa và phát chúng.
 Đây là cơ chế để đổi trọng số/A-B mà không cần release app, nên `version` phải tăng mỗi lần đổi
-`payload`, và mỗi lần đổi chỉ nên bật một bundle.
+các entry, và mỗi lần đổi chỉ nên bật một bundle.
 
 
 Seed:
 
 
 ```sql
-insert into app_config (version, payload, enabled) values (1, '{…json trên…}'::jsonb, true);
+insert into app_config (version, enabled) values (1, true);
+insert into app_config_entries (config_id, key, value)
+values (1, 'feed.pageSize', '10'::jsonb),
+       (1, 'ranking.weights.positiveChannel', '0.8'::jsonb);
+-- Seed đầy đủ mọi leaf trong JSON trên theo cùng định dạng dotted key.
 ```
 
 

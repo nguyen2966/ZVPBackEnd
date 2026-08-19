@@ -11,6 +11,7 @@ drop table if exists videos;
 drop table if exists categories;
 drop table if exists sessions;
 drop table if exists users;
+drop table if exists app_config_entries;
 drop table if exists app_config;
 drop type if exists reaction_type;
 
@@ -103,9 +104,15 @@ create index reactions_counts  on reactions (video_id, type) where active;  -- r
 create table app_config (
   id         serial primary key,
   version    bigint not null,
-  payload    jsonb  not null,              -- server coi là opaque; shape ở mục 5
   enabled    boolean not null default false,
   updated_at timestamptz not null default now()
+);
+
+create table app_config_entries (
+  config_id int   not null references app_config(id) on delete cascade,
+  key       text  not null,
+  value     jsonb not null,
+  primary key (config_id, key)
 );
 
 -- Đúng một bundle live tại một thời điểm.

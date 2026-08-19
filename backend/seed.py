@@ -99,6 +99,17 @@ async def clear_data(conn: asyncpg.Connection) -> None:
     await conn.execute("truncate reactions, videos, categories, sessions, users, app_config restart identity cascade")
 
 
+def flatten_config(value: dict, prefix: str = "") -> list[tuple[str, object]]:
+    entries: list[tuple[str, object]] = []
+    for key, child in value.items():
+        dotted_key = f"{prefix}.{key}" if prefix else key
+        if isinstance(child, dict):
+            entries.extend(flatten_config(child, dotted_key))
+        else:
+            entries.append((dotted_key, child))
+    return entries
+
+
 async def seed(conn: asyncpg.Connection) -> None:
     items = load_source_items()
     print(f"→ Nguồn: {len(items)} video có đủ metadata + asset HLS")
@@ -176,11 +187,15 @@ async def seed(conn: asyncpg.Connection) -> None:
     print(f"→ {len(rows)} video status=READY (mỗi video là một asset riêng trên S3)")
 
     # ---- Config bundle (SPEC mục 5) ----
-    await conn.execute(
-        "insert into app_config (version, payload, enabled) values (1, $1::jsonb, true)",
-        json.dumps(DEFAULT_PAYLOAD),
+    config_id = await conn.fetchval(
+        "insert into app_config (version, enabled) values (1, true) returning id"
     )
-    print("→ app_config version=1 enabled")
+    entries = flatten_config(DEFAULT_PAYLOAD)
+    await conn.executemany(
+        "insert into app_config_entries (config_id, key, value) values ($1, $2, $3::jsonb)",
+        [(config_id, key, json.dumps(value)) for key, value in entries],
+    )
+    print(f"→ app_config version=1 enabled, {len(entries)} entries")
 
 
 async def main() -> None:

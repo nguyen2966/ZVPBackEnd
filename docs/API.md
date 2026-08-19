@@ -353,10 +353,10 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
     "ranking": {
       "positiveCompletionRate": 0.6,
       "minPlaybackMsForSession": 0,
-      "enabled": ["likedChannel", "dislikedChannel", "mostWatchedChannel",
-                  "likedCategory", "dislikedCategory", "mostWatchedCategory"],
-      "weights": { "likedChannel": 1.0, "dislikedChannel": -1.5, "mostWatchedChannel": 0.8,
-                   "likedCategory": 0.6, "dislikedCategory": -0.8, "mostWatchedCategory": 0.5 }
+      "enabled": ["likedChannel", "dislikedChannel", "positiveChannel",
+                  "likedCategory", "dislikedCategory", "positiveCategory"],
+      "weights": { "likedChannel": 1.0, "dislikedChannel": -1.5, "positiveChannel": 0.8,
+                   "likedCategory": 0.6, "dislikedCategory": -0.8, "positiveCategory": 0.5 }
     },
     "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
     "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
@@ -366,8 +366,8 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
 ```
 
 - `ETag` hiện tại: `W/"config-v1"`, derive từ `version`. Gửi lại qua `If-None-Match` → `304`.
-- **Không bao giờ trả `404`.** Chưa có bundle nào bật thì trả bundle default với `version = 0`.
-  Client cold start cứ gọi thẳng, không cần xử lý trường hợp thiếu config.
+- **Không bao giờ trả `404`.** Chưa có bundle nào bật thì trả `payload: {}` với `version = 0`.
+  Client dùng default compile-in cho các key bị thiếu.
 - `payload` là opaque với server — đổi trọng số ranking không cần release app, chỉ cần tăng
   `version` và bật bundle mới.
 - `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client**.
