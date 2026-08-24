@@ -186,6 +186,46 @@ xem. Client tự dedup và tự lọc.
 
 ---
 
+## 4b. `GET /api/users/{userId}/bookmarks`
+
+Cần auth. Trả **toàn bộ** video user đó đã bookmark, **đúng cùng shape với `/api/feed`** —
+dùng chung parser, chung màn hình player, không cần code riêng.
+
+```json
+{
+  "items": [
+    { "position": 0, "video": { /* y hệt object video ở mục 4 */ } }
+  ]
+}
+```
+
+| | |
+|---|---|
+| Thứ tự | Mới bookmark nhất lên đầu (theo `clientUpdatedAt`), **không** random như `/api/feed` |
+| Phân trang | Không có. Trả hết, giống `GET /api/reactions` |
+| `viewerState.isBookmarked` | Luôn `true` với mọi item ở đây |
+| `viewerState.reaction` | Vẫn là `LIKE`/`DISLIKE`/`null` thật của user |
+| Chưa bookmark gì | `200` với `items: []`, **không** phải `404` |
+
+**Chỉ xem được bookmark của chính mình.** `userId` phải khớp user trong access token, không
+thì trả `403 FORBIDDEN` — kể cả khi `userId` không tồn tại (không tiết lộ user nào có thật).
+Bookmark là dữ liệu riêng tư; nếu sau này cần mở cho hồ sơ công khai thì phải bỏ ràng buộc
+này một cách có chủ đích ở phía server.
+
+| Trường hợp | Kết quả |
+|---|---|
+| Thiếu/hết token | `401` |
+| `userId` của người khác | `403 FORBIDDEN` |
+| `userId` không đúng dạng UUID | `400 INVALID_REQUEST` |
+
+Bỏ bookmark (`type=BOOKMARK, active=false`) thì item biến mất khỏi endpoint này ngay — server
+vẫn giữ tombstone nội bộ cho LWW nhưng không lộ ra (bất biến 4).
+
+Video đã xoá (`status = DELETED`) bị loại khỏi danh sách. Video đang `PROCESSING` thì **vẫn
+hiện**, để bookmark của user không im lặng biến mất trong lúc chờ xử lý.
+
+---
+
 ## 5. Reaction
 
 Ba loại: `LIKE`, `DISLIKE`, `BOOKMARK`. Mỗi `(user, video, type)` là một trạng thái bật/tắt độc lập,
@@ -469,5 +509,6 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 - [ ] Xử lý `STALE` bằng cách nhận `current` làm sự thật
 - [ ] `REJECTED` thì bỏ hẳn khỏi queue, không retry
 - [ ] Batch ≤ 200 mutation
+- [ ] Màn hình bookmark: dùng `GET /api/users/{userId}/bookmarks` (cùng shape feed, không cần parser riêng)
 - [ ] Parser riêng cho `GET /api/reactions` (`creator`/`thumbnailUrl`/`category` khác feed)
 - [ ] Cho phép cleartext HTTP nếu test qua LAN (xem [../SERVING.md](../SERVING.md))

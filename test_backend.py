@@ -270,6 +270,34 @@ def main() -> int:
     for field in ("id", "displayName", "username"):
         check(f"creator.{field} không null", embedded["creator"].get(field) is not None)
 
+    # ---------------------------------------------------------------- bookmarks
+    section("16. GET /api/users/{userId}/bookmarks - cùng shape với /api/feed")
+    me = body["userId"]
+    r = client.get(f"/api/users/{me}/bookmarks", headers=auth_a)
+    check("trả 200", r.status_code == 200, r.text)
+    bm = r.json()
+    check("chỉ có key 'items'", set(bm.keys()) == {"items"}, str(bm.keys()))
+    check("có ít nhất 1 bookmark (bước 10 đã tạo)", len(bm["items"]) >= 1)
+    if bm["items"]:
+        bv = bm["items"][0]["video"]
+        feed_v = items[0]["video"]
+        check("shape video KHỚP /api/feed", set(bv.keys()) == set(feed_v.keys()),
+              f"{sorted(set(bv) ^ set(feed_v))}")
+        check("position 0-based liên tục",
+              [i["position"] for i in bm["items"]] == list(range(len(bm["items"]))))
+        check("mọi item đều isBookmarked=true",
+              all(i["video"]["viewerState"]["isBookmarked"] for i in bm["items"]))
+        check("playbackAsset.url không rỗng",
+              all(i["video"]["playbackAsset"]["url"] for i in bm["items"]))
+        check("KHÔNG lồng thừa video.video", all("video" not in i["video"] for i in bm["items"]))
+
+    check("thiếu token -> 401", client.get(f"/api/users/{me}/bookmarks").status_code == 401)
+    r = client.get(f"/api/users/{uuid.uuid4()}/bookmarks", headers=auth_a)
+    check("xem bookmark user khác -> 403", r.status_code == 403, r.text)
+    check("code = FORBIDDEN", r.json()["error"]["code"] == "FORBIDDEN", r.text)
+    r = client.get("/api/users/not-a-uuid/bookmarks", headers=auth_a)
+    check("userId sai định dạng -> 400", r.status_code == 400, r.text)
+
     # ---------------------------------------------------------------- 12. Config
     section("12. GET /api/config + ETag/304")
     r = client.get("/api/config", headers=auth_a)
