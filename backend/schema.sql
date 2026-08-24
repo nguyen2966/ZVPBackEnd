@@ -6,11 +6,14 @@ create extension if not exists pgcrypto;   -- gen_random_uuid()
 -- Xoá theo thứ tự phụ thuộc để chạy lại được nhiều lần.
 drop trigger if exists reactions_counters on reactions;
 drop function if exists reactions_sync_counters();
+drop trigger if exists app_config_entries_bump on app_config_entries;
+drop function if exists app_config_bump_version();
 drop table if exists reactions;
 drop table if exists videos;
 drop table if exists categories;
 drop table if exists sessions;
 drop table if exists users;
+-- app_config_entries phải bỏ TRƯỚC app_config vì có khoá ngoại trỏ sang.
 drop table if exists app_config_entries;
 drop table if exists app_config;
 drop type if exists reaction_type;
@@ -101,6 +104,8 @@ create index reactions_counts  on reactions (video_id, type) where active;  -- r
 
 -- ---------- 2.4 Config ----------
 
+-- Bundle config. Payload KHÔNG nằm ở đây nữa mà tách thành từng row key-value bên dưới,
+-- để sửa một setting không phải ghi đè cả cục JSON.
 create table app_config (
   id         serial primary key,
   version    bigint not null,
@@ -108,6 +113,11 @@ create table app_config (
   updated_at timestamptz not null default now()
 );
 
+-- Đúng một bundle live tại một thời điểm.
+create unique index app_config_one_live on app_config (enabled) where enabled;
+
+-- Mỗi setting một row. key là đường dẫn chấm ("ranking.weights.likedChannel"),
+-- value là jsonb để giữ nguyên kiểu (int/float/bool/array) - xem backend/config_payload.py.
 create table app_config_entries (
   config_id int   not null references app_config(id) on delete cascade,
   key       text  not null,
@@ -115,8 +125,26 @@ create table app_config_entries (
   primary key (config_id, key)
 );
 
--- Đúng một bundle live tại một thời điểm.
-create unique index app_config_one_live on app_config (enabled) where enabled;
+-- SPEC mục 5: "version phải tăng mỗi lần đổi payload". Trước đây payload là một cột nên
+-- việc đó do người sửa tự nhớ; giờ payload rải ra nhiều row, quên bump version là client
+-- vẫn thấy ETag cũ và giữ config cũ tới hết TTL. Đẩy hẳn cho database lo.
+create or replace function app_config_bump_version() returns trigger as $$
+declare target int;
+begin
+  target := coalesce(NEW.config_id, OLD.config_id);
+  -- `now()` là thời điểm bắt đầu TRANSACTION nên cố định trong suốt transaction. Sau row đầu
+  -- tiên, updated_at đã bằng now() nên điều kiện dưới sai -> các row còn lại của cùng một
+  -- transaction không bump nữa. Nhờ vậy ghi 21 setting một lượt chỉ tăng version đúng 1 lần.
+  update app_config
+     set version = version + 1, updated_at = now()
+   where id = target and updated_at < now();
+  return null;
+end;
+$$ language plpgsql;
+
+create trigger app_config_entries_bump
+after insert or update or delete on app_config_entries
+for each row execute function app_config_bump_version();
 
 -- ---------- 4.4 Trigger counter ----------
 

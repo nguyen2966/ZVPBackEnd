@@ -36,7 +36,9 @@ from pathlib import Path
 import asyncpg
 
 from .config import BASE_DIR, DATABASE_DSN
+from .config_payload import flatten
 from .routers.config import DEFAULT_PAYLOAD
+from .seed_engagement import counts_for
 from .security import hash_password
 
 FEED_ITEMS = BASE_DIR / "feed_items_v2.json"
@@ -82,6 +84,7 @@ def load_source_items() -> list[dict]:
             "avatar_url": (v.get("user") or {}).get("avatarUrl"),
             "playback_url": playback,
             "thumbnail_url": v["thumbnailAsset"]["url"],
+            "like_count": int((v.get("engagement") or {}).get("likeCount") or 0),
         })
     if not out:
         raise SystemExit(f"Không đọc được video nào từ {FEED_ITEMS.name}.")
@@ -97,17 +100,6 @@ async def migrate(conn: asyncpg.Connection) -> None:
 async def clear_data(conn: asyncpg.Connection) -> None:
     """Xoá data nhưng giữ schema (chế độ --data)."""
     await conn.execute("truncate reactions, videos, categories, sessions, users, app_config restart identity cascade")
-
-
-def flatten_config(value: dict, prefix: str = "") -> list[tuple[str, object]]:
-    entries: list[tuple[str, object]] = []
-    for key, child in value.items():
-        dotted_key = f"{prefix}.{key}" if prefix else key
-        if isinstance(child, dict):
-            entries.extend(flatten_config(child, dotted_key))
-        else:
-            entries.append((dotted_key, child))
-    return entries
 
 
 async def seed(conn: asyncpg.Connection) -> None:
@@ -160,6 +152,8 @@ async def seed(conn: asyncpg.Connection) -> None:
     print(f"→ {len(TEST_USERS)} user test: {', '.join(u for u, _, _ in TEST_USERS)} (mật khẩu: password123)")
 
     # ---- Videos: một row cho mỗi video thật, không nhân bản ----
+    # Counter engagement được nạp luôn ở đây (xem seed_engagement.py để biết cách suy số):
+    # nếu để 0, feed sẽ trông như app chưa có ai dùng.
     rows = [
         (
             src["asset_id"],
@@ -172,6 +166,7 @@ async def seed(conn: asyncpg.Connection) -> None:
             src["playback_url"],
             src["thumbnail_url"],
             "READY",
+            *counts_for(src["like_count"]),
         )
         for i, src in enumerate(items)
     ]
@@ -179,23 +174,28 @@ async def seed(conn: asyncpg.Connection) -> None:
     await conn.executemany(
         """
         insert into videos (id, creator_id, category_id, title, caption, duration_ms,
-                            playback_url, thumbnail_url, status)
-        values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                            playback_url, thumbnail_url, status,
+                            like_count, dislike_count, bookmark_count)
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         """,
         rows,
     )
+    likes = sorted(r[9] for r in rows)
     print(f"→ {len(rows)} video status=READY (mỗi video là một asset riêng trên S3)")
+    print(f"   engagement: like median={likes[len(likes)//2]:,} max={likes[-1]:,}")
 
-    # ---- Config bundle (SPEC mục 5) ----
+    # ---- Config bundle (SPEC mục 5): mỗi setting một row key-value ----
     config_id = await conn.fetchval(
         "insert into app_config (version, enabled) values (1, true) returning id"
     )
-    entries = flatten_config(DEFAULT_PAYLOAD)
+    entries = flatten(DEFAULT_PAYLOAD)
     await conn.executemany(
         "insert into app_config_entries (config_id, key, value) values ($1, $2, $3::jsonb)",
-        [(config_id, key, json.dumps(value)) for key, value in entries],
+        [(config_id, key, json.dumps(value)) for key, value in entries.items()],
     )
-    print(f"→ app_config version=1 enabled, {len(entries)} entries")
+    # Trigger app_config_entries_bump đã +1 version khi ghi entries -> đặt lại về 1 cho gọn.
+    await conn.execute("update app_config set version = 1 where id = $1", config_id)
+    print(f"→ app_config version=1 enabled ({len(entries)} setting dạng key-value)")
 
 
 async def main() -> None:

@@ -21,10 +21,18 @@ def _require(key: str) -> str:
 
 def database_dsn() -> str:
     """
-    DSN cho asyncpg. DB_URL trong .env đang ở dạng Prisma (có '?schema=public'),
-    còn libpq/asyncpg không hiểu tham số đó nên phải cắt bỏ query string.
+    DSN cho asyncpg.
+
+    Chỉ bỏ tham số `schema` (kiểu Prisma, libpq không hiểu) và giữ lại phần còn lại của query
+    string. Trước đây hàm này cắt sạch mọi thứ sau dấu '?', nhưng DSN của Neon mang theo
+    `sslmode=require&channel_binding=require` - cắt đi là mất luôn yêu cầu TLS.
     """
-    return _require("DB_URL").split("?")[0]
+    raw = _require("DB_URL")
+    base, sep, query = raw.partition("?")
+    if not sep:
+        return base
+    kept = [p for p in query.split("&") if p and not p.lower().startswith("schema=")]
+    return f"{base}?{'&'.join(kept)}" if kept else base
 
 
 DATABASE_DSN = database_dsn()

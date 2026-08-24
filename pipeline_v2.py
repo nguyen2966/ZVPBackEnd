@@ -43,7 +43,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("youtube_to_vndata_s3")
 
 
-def download_from_youtube(url: str) -> dict[str, Any]:
+def download_from_youtube(url: str, player_client: str | None = None) -> dict[str, Any]:
     try:
         import yt_dlp
     except ImportError as exc:
@@ -59,10 +59,18 @@ def download_from_youtube(url: str) -> dict[str, Any]:
         "no_warnings": True,
         "js_runtimes": {"node": {}},
     }
+    if player_client:
+        options["extractor_args"] = {"youtube": {"player_client": [player_client]}}
     if COOKIES_FILE.exists():
         options["cookiefile"] = str(COOKIES_FILE)
     with yt_dlp.YoutubeDL(options) as downloader:
         return downloader.extract_info(url, download=True)
+
+
+# Một số video liệt kê format bình thường nhưng tải thật thì trả HTTP 403 (YouTube yêu cầu
+# PO token / ép SABR cho player client mặc định). Đổi sang player client `android` lấy được
+# URL media khác và tải bình thường - đã kiểm chứng trên 2 video của batch_3.
+FALLBACK_PLAYER_CLIENT = "android"
 
 
 def download_with_retries(url: str) -> dict[str, Any]:
@@ -76,6 +84,14 @@ def download_with_retries(url: str) -> dict[str, Any]:
                 delay = RETRY_BACKOFF_SECONDS * attempt
                 logger.warning("Tải lỗi lần %d/%d; thử lại sau %ds: %s", attempt, MAX_DOWNLOAD_RETRIES, delay, exc)
                 time.sleep(delay)
+
+    # Hết lượt thử với client mặc định -> thử nốt bằng player client thay thế trước khi bỏ cuộc.
+    logger.warning("Thử lại %s bằng player_client=%s", url, FALLBACK_PLAYER_CLIENT)
+    try:
+        return download_from_youtube(url, player_client=FALLBACK_PLAYER_CLIENT)
+    except Exception as exc:  # noqa: BLE001 - vẫn hỏng thì trả về lỗi gốc cho dễ đọc
+        logger.warning("player_client=%s cũng lỗi: %s", FALLBACK_PLAYER_CLIENT, exc)
+
     assert last_error is not None
     raise last_error
 

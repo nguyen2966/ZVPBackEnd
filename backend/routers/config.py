@@ -1,4 +1,9 @@
-"""GET /api/config (SPEC mục 3.7)."""
+"""
+GET /api/config (SPEC mục 3.7).
+
+Payload lưu trong DB dưới dạng từng row key-value (bảng app_config_entries) nhưng response
+vẫn là JSON lồng nhau đúng SPEC mục 5 - client không thấy khác biệt. Xem config_payload.py.
+"""
 
 from __future__ import annotations
 

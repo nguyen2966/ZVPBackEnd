@@ -7,8 +7,11 @@ Chạy (server phải đang chạy):
     python test_backend.py
     python test_backend.py --base http://192.168.29.9:3000
 
-Script tự dọn: mọi reaction do test tạo ra đều nằm trên user test và được ghi đè bằng LWW,
-nhưng vẫn nên chạy `python -m backend.seed` lại nếu muốn DB sạch hoàn toàn.
+Script dùng tài khoản riêng `apitest` (tự đăng ký ở lần chạy đầu), nên chạy test KHÔNG
+làm văng session của `khoa`/`demo` đang đăng nhập trên điện thoại.
+
+Mọi reaction do test tạo ra đều nằm trên tài khoản đó và được ghi đè bằng LWW, nhưng vẫn nên
+chạy `python -m backend.seed` lại nếu muốn DB sạch hoàn toàn.
 
 Bộ ba quan trọng nhất là bước 5, 6, 7 (idempotency + LWW hai chiều): đó là toàn bộ cơ chế
 chống đếm đôi và chống mất dữ liệu khi client retry hoặc user đổi thiết bị.
@@ -28,8 +31,13 @@ from urllib.parse import urljoin
 import httpx
 
 BASE = "http://127.0.0.1:3000"
-USERNAME = "khoa"
-PASSWORD = "password123"
+
+# Tài khoản RIÊNG cho test, cố ý KHÔNG dùng 'khoa'/'demo'.
+# Lý do: bất biến 8 (mỗi user một session) nên mỗi lần script này login sẽ revoke session
+# của mọi thiết bị khác đang dùng cùng tài khoản - chạy test là đá điện thoại ra khỏi app.
+# Script tự đăng ký tài khoản này ở lần chạy đầu nên không cần seed lại.
+USERNAME = "apitest"
+PASSWORD = "apitest-12345"
 
 # Mốc thời gian cho các mutation, tính động để script CHẠY LẠI ĐƯỢC mà không cần re-seed.
 #
@@ -86,6 +94,13 @@ def main() -> int:
     base = args.base.rstrip("/")
 
     client = httpx.Client(base_url=base, timeout=30.0)
+
+    # Tự tạo tài khoản test nếu chưa có (409 = đã có, cũng không sao).
+    reg = client.post("/api/auth/register",
+                      json={"username": USERNAME, "password": PASSWORD, "displayName": "API Test"})
+    if reg.status_code not in (201, 409):
+        print(f"Không tạo được tài khoản test: HTTP {reg.status_code} {reg.text[:120]}")
+        return 1
 
     # ---------------------------------------------------------------- 1. Login
     section("1. POST /api/auth/login")

@@ -24,6 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent
 HLS_DIR = BASE_DIR / "public_v2" / "hls"
 THUMB_DIR = BASE_DIR / "public_v2" / "thumbnails"
 
+# Prefix trên S3 cho thumbnail. PHẢI là "thumbnails/" vì bucket policy chỉ mở
+# public s3:GetObject cho hls/* và thumbnails/*; upload vào "thumbs/" sẽ trả 403.
+THUMB_PREFIX = "thumbnails"
+
 HLS_CONTENT_TYPE = "application/vnd.apple.mpegurl"
 VIDEO_CONTENT_TYPE = "video/mp4"
 IMAGE_CONTENT_TYPE = "image/jpeg"
@@ -85,7 +89,7 @@ def public_url(settings: S3Settings, key: str) -> str:
 def build_asset_urls(settings: S3Settings, video_id: str) -> dict[str, str]:
     return {
         "hls_url": public_url(settings, f"hls/{video_id}/master.m3u8"),
-        "thumbnail_url": public_url(settings, f"thumbnails/{video_id}.jpg"),
+        "thumbnail_url": public_url(settings, f"{THUMB_PREFIX}/{video_id}.jpg"),
     }
 
 
@@ -107,7 +111,7 @@ def video_upload_plan(video_id: str) -> list[tuple[Path, str, dict[str, str]]]:
     for segment in sorted(video_dir.glob("*/*.mp4dv")):
         rel = segment.relative_to(video_dir).as_posix()
         plan.append(upload_spec(segment, f"hls/{video_id}/{rel}", VIDEO_CONTENT_TYPE, IMMUTABLE_CACHE))
-    plan.append(upload_spec(thumb, f"thumbnails/{video_id}.jpg", IMAGE_CONTENT_TYPE, IMMUTABLE_CACHE))
+    plan.append(upload_spec(thumb, f"{THUMB_PREFIX}/{video_id}.jpg", IMAGE_CONTENT_TYPE, IMMUTABLE_CACHE))
     for playlist in sorted(video_dir.glob("*/index.m3u8")):
         rel = playlist.relative_to(video_dir).as_posix()
         plan.append(upload_spec(playlist, f"hls/{video_id}/{rel}", HLS_CONTENT_TYPE, PLAYLIST_CACHE))
