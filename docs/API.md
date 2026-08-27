@@ -544,6 +544,8 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 - [ ] Xử lý `STALE` bằng cách nhận `current` làm sự thật
 - [ ] `REJECTED` thì bỏ hẳn khỏi queue, không retry
 - [ ] Batch ≤ 200 mutation
+- [ ] Upload: `POST /api/videos` trả `202`, phải poll `GET /api/videos/{id}` tới khi `READY`/`FAILED`
+- [ ] Màn hình "Video của tôi": `GET /api/users/{userId}/videos` (có `status` để hiện video đang xử lý)
 - [ ] Màn hình bookmark: dùng `GET /api/users/{userId}/bookmarks` (cùng shape feed, không cần parser riêng)
 - [ ] Parser riêng cho `GET /api/reactions` (`creator`/`thumbnailUrl`/`category` khác feed)
 - [ ] Cho phép cleartext HTTP nếu test qua LAN (xem [../SERVING.md](../SERVING.md))

@@ -55,3 +55,6 @@ MAX_MUTATIONS_PER_BATCH = 200
 
 # SPEC mục 3.7: TTL gợi ý cho client cache config bundle.
 CONFIG_TTL_SECONDS = 900
+
+# Giới hạn dung lượng file user upload. Chặn ngay lúc ghi từng khối chứ không đọc hết vào RAM.
+MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_MB", "200")) * 1024 * 1024

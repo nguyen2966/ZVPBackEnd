@@ -316,6 +316,72 @@ def main() -> int:
     r = client.get("/api/users/not-a-uuid/bookmarks", headers=auth_a)
     check("userId sai định dạng -> 400", r.status_code == 400, r.text)
 
+    # ---------------------------------------------------------------- upload
+    section("18. POST /api/videos (upload) - kiểm tra đầu vào")
+    tiny_mp4 = b"khong-phai-video-that"        # header giả, đủ để qua bước đuôi file
+    cid = str(categories[0]["id"])
+
+    r = client.post("/api/videos", headers=auth_a,
+                    files={"file": ("x.txt", b"hello", "text/plain")},
+                    data={"title": "t", "categoryId": cid})
+    check("không phải .mp4 -> 400", r.status_code == 400, r.text)
+    check("code = INVALID_REQUEST", r.json()["error"]["code"] == "INVALID_REQUEST", r.text)
+
+    r = client.post("/api/videos", headers=auth_a,
+                    files={"file": ("junk.mp4", tiny_mp4, "video/mp4")},
+                    data={"title": "t", "categoryId": cid})
+    check("mp4 hỏng -> 400 (ffprobe không đọc được)", r.status_code == 400, r.text)
+
+    r = client.post("/api/videos", headers=auth_a,
+                    files={"file": ("a.mp4", tiny_mp4, "video/mp4")},
+                    data={"title": "t", "categoryId": "999999"})
+    check("categoryId không tồn tại -> 400", r.status_code == 400, r.text)
+
+    r = client.post("/api/videos", headers=auth_a,
+                    files={"file": ("a.mp4", tiny_mp4, "video/mp4")},
+                    data={"title": "  ", "categoryId": cid})
+    check("title rỗng -> 400", r.status_code == 400, r.text)
+
+    r = client.post("/api/videos",
+                    files={"file": ("a.mp4", tiny_mp4, "video/mp4")},
+                    data={"title": "t", "categoryId": cid})
+    check("không auth -> 401", r.status_code == 401, r.text)
+
+    check("GET video không tồn tại -> 404",
+          client.get("/api/videos/khong-co-dau", headers=auth_a).status_code == 404)
+
+    # ---------------------------------------------------------------- user videos
+    section("19. GET /api/users/{userId}/videos")
+    me = body["userId"]
+    r = client.get(f"/api/users/{me}/videos", headers=auth_a)
+    check("trả 200", r.status_code == 200, r.text)
+    mine = r.json()["items"]
+    check("chỉ có key 'items'", set(r.json().keys()) == {"items"})
+    check("position 0-based liên tục",
+          [i["position"] for i in mine] == list(range(len(mine))))
+    check("mỗi item có status", all("status" in i for i in mine), json.dumps(mine[:1]))
+    if mine:
+        check("shape video KHỚP /api/feed",
+              set(mine[0]["video"].keys()) == set(items[0]["video"].keys()),
+              str(sorted(set(mine[0]["video"]) ^ set(items[0]["video"]))))
+        check("mọi video đều của user này",
+              all(i["video"]["user"]["id"] == me for i in mine))
+
+    # xem trang người khác: chỉ được thấy READY
+    other = items[0]["video"]["user"]["id"]
+    r = client.get(f"/api/users/{other}/videos", headers=auth_a)
+    check("xem video user khác -> 200 (nội dung công khai)", r.status_code == 200, r.text)
+    check("chỉ thấy video READY của người khác",
+          all(i["status"] == "READY" for i in r.json()["items"]),
+          str({i["status"] for i in r.json()["items"]}))
+
+    check("thiếu token -> 401", client.get(f"/api/users/{me}/videos").status_code == 401)
+    check("userId sai định dạng -> 400",
+          client.get("/api/users/not-a-uuid/videos", headers=auth_a).status_code == 400)
+    r = client.get(f"/api/users/{uuid.uuid4()}/videos", headers=auth_a)
+    check("userId không tồn tại -> 200 + rỗng",
+          r.status_code == 200 and r.json()["items"] == [], r.text)
+
     # ---------------------------------------------------------------- 12. Config
     section("12. GET /api/config + ETag/304")
     r = client.get("/api/config", headers=auth_a)
