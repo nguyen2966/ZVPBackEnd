@@ -14,7 +14,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import db, errors
-from .routers import assets, auth, config as config_router, feed, reactions
+from .routers import (
+    assets,
+    auth,
+    categories,
+    config as config_router,
+    feed,
+    reactions,
+)
 
 
 @asynccontextmanager
@@ -43,6 +50,7 @@ def create_app() -> FastAPI:
     errors.install(app)   # ép mọi lỗi về shape { "error": { code, message } } (SPEC mục 7)
 
     app.include_router(auth.router)
+    app.include_router(categories.router)
     app.include_router(feed.router)
     app.include_router(reactions.router)
     app.include_router(config_router.router)

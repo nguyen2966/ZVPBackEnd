@@ -226,6 +226,40 @@ hiện**, để bookmark của user không im lặng biến mất trong lúc ch�
 
 ---
 
+## 4c. `GET /api/categories`
+
+Cần auth. **Không tham số.** Trả toàn bộ category hiện có để client lưu và sử dụng cho ranking,
+filter hoặc màn hình chọn category mà không phải hard-code danh sách trong app.
+
+```json
+{
+  "items": [
+    { "id": 1, "name": "Food" },
+    { "id": 2, "name": "Fun and Memes" }
+  ]
+}
+```
+
+Response chỉ có duy nhất key `items`. Mỗi item chỉ có đúng hai field:
+
+| Field | Kiểu | Ghi chú |
+|---|---|---|
+| `id` | `Int` | ID của category trong database; client dùng làm định danh |
+| `name` | `String` | Tên category; dữ liệu hiện tại không rỗng, database đảm bảo unique |
+
+- Danh sách được sắp xếp tăng dần theo `name`, sau đó theo `id` nếu tên bằng nhau.
+- Nếu database chưa có category nào, endpoint trả `200` với `{ "items": [] }`, không trả `404`.
+- Thiếu, hết hạn hoặc sai access token thì trả `401` theo quy ước chung.
+
+Ví dụ:
+
+```bash
+curl -s localhost:3000/api/categories \
+  -H "authorization: Bearer $TOKEN" | jq
+```
+
+---
+
 ## 5. Reaction
 
 Ba loại: `LIKE`, `DISLIKE`, `BOOKMARK`. Mỗi `(user, video, type)` là một trạng thái bật/tắt độc lập,
@@ -503,6 +537,7 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 - [ ] Lưu cả `accessToken` và `refreshToken` sau login
 - [ ] Phân biệt `TOKEN_EXPIRED` (refresh) và `SESSION_REVOKED` (dừng hẳn, login lại)
 - [ ] Dedup feed theo `video.id`, **không** theo `position`
+- [ ] Fetch `GET /api/categories` và lưu theo `id`; không hard-code danh sách category trong app
 - [ ] Dùng thẳng `playbackAsset.url`, không tự ghép base URL
 - [ ] `clientUpdatedAt` = lúc **user bấm**, giữ nguyên qua mọi lần retry
 - [ ] Lấy số đếm từ mảng `videos` trong response, không tự cộng trừ optimistic mãi

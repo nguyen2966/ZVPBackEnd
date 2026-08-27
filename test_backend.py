@@ -150,6 +150,24 @@ def main() -> int:
 
     check("thiếu token -> 401", client.get("/api/feed").status_code == 401)
 
+    # ---------------------------------------------------------------- 2b. Categories
+    section("2b. GET /api/categories")
+    r = client.get("/api/categories", headers=auth_a)
+    check("categories trả 200", r.status_code == 200, r.text)
+    categories = r.json().get("items", [])
+    check("categories trả object chỉ có items", set(r.json()) == {"items"}, r.text)
+    check("category chỉ có id và name",
+          all(set(item) == {"id", "name"} for item in categories), r.text)
+    check("category.id là số nguyên",
+          all(isinstance(item["id"], int) for item in categories), r.text)
+    check("category.name không rỗng",
+          all(isinstance(item["name"], str) and item["name"] for item in categories), r.text)
+    check("category sắp xếp theo name",
+          [item["name"] for item in categories]
+          == sorted(item["name"] for item in categories), r.text)
+    check("categories thiếu token -> 401",
+          client.get("/api/categories").status_code == 401)
+
     # ---------------------------------------------------------------- 3. Random
     section("3. Hai lần gọi feed phải khác nhau (random, không cursor)")
     seen = []
