@@ -21,6 +21,7 @@ from .routers import (
     config as config_router,
     feed,
     reactions,
+    resumable_uploads,
     uploads,
 )
 
@@ -55,6 +56,7 @@ def create_app() -> FastAPI:
     app.include_router(feed.router)
     app.include_router(reactions.router)
     app.include_router(config_router.router)
+    app.include_router(resumable_uploads.router)
     app.include_router(uploads.router)
     app.include_router(assets.router)
 

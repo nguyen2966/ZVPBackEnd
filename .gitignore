@@ -4,6 +4,7 @@ public/
 public_v2/
 downloads/
 downloads_v2/
+var/
 __pycache__/
 .vscode/
 .venv/

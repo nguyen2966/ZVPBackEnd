@@ -93,30 +93,56 @@ def build_asset_urls(settings: S3Settings, video_id: str) -> dict[str, str]:
     }
 
 
+def upload_thumbnail(video_id: str, content: bytes) -> str:
+    """Upload JPEG do client cung cấp vào final thumbnail key của video."""
+    settings = S3Settings.from_env()
+    key = f"{THUMB_PREFIX}/{video_id}.jpg"
+    create_client(settings).put_object(
+        Bucket=settings.bucket,
+        Key=key,
+        Body=content,
+        ContentType=IMAGE_CONTENT_TYPE,
+        CacheControl=IMMUTABLE_CACHE,
+    )
+    return public_url(settings, key)
+
+
 def upload_spec(path: Path, key: str, content_type: str, cache_control: str) -> tuple[Path, str, dict[str, str]]:
     return path, key, {"ContentType": content_type, "CacheControl": cache_control}
 
 
-def video_upload_plan(video_id: str) -> list[tuple[Path, str, dict[str, str]]]:
-    """Master playlist luôn được upload cuối để không công bố một bộ asset chưa hoàn chỉnh."""
+def hls_upload_plan(video_id: str) -> list[tuple[Path, str, dict[str, str]]]:
+    """Các HLS object, với master playlist luôn nằm cuối."""
     video_dir = HLS_DIR / video_id
     master = video_dir / "master.m3u8"
-    thumb = THUMB_DIR / f"{video_id}.jpg"
     if not master.exists():
         raise FileNotFoundError(f"Thiếu {master}; chạy convert_v2.py trước")
-    if not thumb.exists():
-        raise FileNotFoundError(f"Thiếu {thumb}; chạy convert_v2.py trước")
 
     plan: list[tuple[Path, str, dict[str, str]]] = []
     for segment in sorted(video_dir.glob("*/*.mp4dv")):
         rel = segment.relative_to(video_dir).as_posix()
         plan.append(upload_spec(segment, f"hls/{video_id}/{rel}", VIDEO_CONTENT_TYPE, IMMUTABLE_CACHE))
-    plan.append(upload_spec(thumb, f"{THUMB_PREFIX}/{video_id}.jpg", IMAGE_CONTENT_TYPE, IMMUTABLE_CACHE))
     for playlist in sorted(video_dir.glob("*/index.m3u8")):
         rel = playlist.relative_to(video_dir).as_posix()
         plan.append(upload_spec(playlist, f"hls/{video_id}/{rel}", HLS_CONTENT_TYPE, PLAYLIST_CACHE))
     plan.append(upload_spec(master, f"hls/{video_id}/master.m3u8", HLS_CONTENT_TYPE, PLAYLIST_CACHE))
     return plan
+
+
+def video_upload_plan(video_id: str) -> list[tuple[Path, str, dict[str, str]]]:
+    """HLS cùng thumbnail local cho pipeline/legacy upload."""
+    thumb = THUMB_DIR / f"{video_id}.jpg"
+    if not thumb.exists():
+        raise FileNotFoundError(f"Thiếu {thumb}; chạy convert_v2.py trước")
+
+    hls_plan = hls_upload_plan(video_id)
+    thumbnail = upload_spec(
+        thumb,
+        f"{THUMB_PREFIX}/{video_id}.jpg",
+        IMAGE_CONTENT_TYPE,
+        IMMUTABLE_CACHE,
+    )
+    return [*hls_plan[:-1], thumbnail, hls_plan[-1]]
 
 
 def object_matches(client: Any, bucket: str, key: str, path: Path, extra: dict[str, str]) -> bool:
@@ -134,12 +160,17 @@ def object_matches(client: Any, bucket: str, key: str, path: Path, extra: dict[s
     )
 
 
-def upload_video_assets(video_id: str, *, force: bool = False) -> dict[str, str]:
+def _upload_plan(
+    video_id: str,
+    plan: list[tuple[Path, str, dict[str, str]]],
+    *,
+    force: bool,
+) -> dict[str, str]:
     settings = S3Settings.from_env()
     client = create_client(settings)
     uploaded = 0
     skipped = 0
-    for path, key, extra in video_upload_plan(video_id):
+    for path, key, extra in plan:
         if not force and object_matches(client, settings.bucket, key, path, extra):
             skipped += 1
             continue
@@ -147,6 +178,15 @@ def upload_video_assets(video_id: str, *, force: bool = False) -> dict[str, str]
         uploaded += 1
     print(f"{video_id}: uploaded={uploaded}, skipped={skipped}")
     return build_asset_urls(settings, video_id)
+
+
+def upload_video_assets(video_id: str, *, force: bool = False) -> dict[str, str]:
+    return _upload_plan(video_id, video_upload_plan(video_id), force=force)
+
+
+def upload_hls_assets(video_id: str, *, force: bool = False) -> dict[str, str]:
+    """Upload HLS nhưng giữ nguyên thumbnail client đã upload lúc initialize."""
+    return _upload_plan(video_id, hls_upload_plan(video_id), force=force)
 
 
 def check_connection() -> None:
@@ -173,7 +213,7 @@ def verify_video(video_id: str) -> None:
             f"Content-Length={thumbnail.get('ContentLength')}"
         )
 
-    segment_keys = [key for _, key, _ in video_upload_plan(video_id) if key.endswith(".mp4dv")]
+    segment_keys = [key for _, key, _ in hls_upload_plan(video_id) if key.endswith(".mp4dv")]
     if not segment_keys:
         raise RuntimeError("Không tìm thấy rendition .mp4dv để kiểm tra")
     response = client.get_object(Bucket=settings.bucket, Key=segment_keys[0], Range="bytes=0-99")

@@ -58,3 +58,15 @@ CONFIG_TTL_SECONDS = 900
 
 # Giới hạn dung lượng file user upload. Chặn ngay lúc ghi từng khối chứ không đọc hết vào RAM.
 MAX_UPLOAD_BYTES = int(os.environ.get("MAX_UPLOAD_MB", "200")) * 1024 * 1024
+
+# Thư mục tạm dành cho resumable video upload. Local development dùng thư mục trong project;
+# single-session production có thể trỏ tới `/tmp/video-uploads`.
+UPLOAD_STORAGE_DIR = Path(
+    os.environ.get("UPLOAD_STORAGE_DIR", BASE_DIR / "var" / "video-uploads")
+).expanduser().resolve()
+
+# Mỗi request chỉ giữ tối đa một part 8 MiB trong memory. Giá trị này được copy vào
+# video_upload_sessions.part_size khi khởi tạo để không đổi giữa chừng trong cùng upload.
+UPLOAD_PART_SIZE_BYTES = 8 * 1024 * 1024
+UPLOAD_SESSION_TTL_SECONDS = 24 * 60 * 60
+MAX_UPLOAD_THUMBNAIL_BYTES = 2 * 1024 * 1024
