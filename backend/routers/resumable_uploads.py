@@ -1,6 +1,8 @@
 """Resumable MP4 upload endpoints cho single-session MVP.
 
-Flow dừng ở ``PROCESSING``. Convert HLS và upload media lên VNData thuộc Phase 3.
+Client khởi tạo session, gửi từng part và gọi complete. Complete ghép MP4 rồi trả ``202``;
+backend tiếp tục xử lý nền: convert HLS, upload lên VNData và cập nhật video thành ``READY``
+hoặc ``FAILED``.
 """
 
 from __future__ import annotations

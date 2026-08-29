@@ -129,6 +129,17 @@ create table videos (
 );
 -- Cố ý không đánh index cho query feed: `order by random()` phải quét và sort toàn bộ tập
 -- `status = 'READY'`, nên không index nào giúp được. Ở pool 200 row thì việc đó là miễn phí.
+
+-- Một row đại diện cho toàn bộ quá trình upload một video. Part nằm trên temporary disk;
+-- không tạo row riêng cho từng part.
+create table video_upload_sessions (
+ id         uuid primary key,             -- UUID do client sinh để retry initialization
+ video_id   text not null unique references videos(id) on delete cascade,
+ file_size  bigint not null check (file_size > 0),
+ part_size  integer not null check (part_size > 0),
+ expires_at timestamptz not null,
+ created_at timestamptz not null default now()
+);
 ```
 
 
@@ -426,6 +437,42 @@ Cần auth. Trả bundle đang `enabled`.
 - Không bao giờ trả `404`: nếu chưa có bundle nào `enabled`, trả bundle default ở mục 5 với
  `version = 0`. Client cold start có timeout ngắn cho endpoint này, `404` khiến nó phải chờ hết
  timeout một cách vô nghĩa.
+
+
+### 3.8 Resumable video upload
+
+
+Cần auth. Client mới dùng bốn endpoint sau thay cho việc gửi toàn bộ MP4 trong một request:
+
+
+| Endpoint | Mục đích |
+|---|---|
+| `POST /api/video-uploads` | Tạo video `UPLOADING`, upload thumbnail và tạo session |
+| `PUT /api/video-uploads/{uploadId}/parts/{partNumber}` | Gửi một part raw byte |
+| `GET /api/video-uploads/{uploadId}` | Lấy `uploadedParts`/`missingParts` để resume |
+| `POST /api/video-uploads/{uploadId}/complete` | Ghép MP4, chuyển sang `PROCESSING` và bắt đầu xử lý nền |
+
+
+`uploadId` do client sinh và giữ ổn định. Khởi tạo lại cùng UUID + metadata hoặc gửi lại cùng part
+phải an toàn. Backend trả `partSize`; client không tự quyết định kích thước part.
+
+
+State machine:
+
+
+```text
+UPLOADING -> PROCESSING -> READY
+                      \-> FAILED
+```
+
+
+Sau `complete`, backend kiểm tra MP4, convert HLS, upload/verify trên VNData và cập nhật duration
+thật. Video chỉ xuất hiện trong feed khi `READY`; màn hình "Video của tôi" có thể hiển thị các
+trạng thái còn lại. Part tạm chỉ được bảo đảm trong cùng phiên backend của MVP; restart/redeploy
+recovery chưa thuộc phạm vi.
+
+
+Hợp đồng request/response và lỗi chi tiết nằm trong [API.md](API.md#4d-resumable-video-upload).
 
 
 ---
@@ -764,6 +811,8 @@ Không phải bỏ vì thiếu thời gian — mà vì chúng thuộc về clien
 | Đếm counter trong handler thay vì trigger | Retry sẽ đếm đôi (mục 4.4) |
 | Suy ra thời điểm reaction từ `now()` | Phá LWW (bất biến 5): hành động offline sẽ luôn thắng oan |
 | Ghi log/analytics lượt xem | Chưa có trong phạm vi |
+| Resume upload qua backend restart/redeploy | MVP dùng ephemeral temporary disk và một instance |
+| Parallel part upload, nhiều upload active, huỷ upload | Để sau MVP; client hiện upload tuần tự một video |
 
 
 ---
@@ -775,8 +824,8 @@ Không phải bỏ vì thiếu thời gian — mà vì chúng thuộc về clien
 1. **TTL của access token.** 1 giờ là hợp lý; 
 2. **Rate limit.** Chưa cần cho phạm vi này, nhưng nếu bật thì `POST /api/reactions` phải trả
   `Retry-After` (mục 7) — client đọc chính header đó.
-3. **Video upload.** Bảng `videos` đã có `status` cho pipeline upload/transcode. Endpoint upload nằm
-  ngoài tài liệu này; seed sẵn 200 video là đủ để client chạy.
+3. **Video upload.** Resumable upload dùng `video_upload_sessions` và bốn endpoint ở mục 3.8.
+  Endpoint cũ `POST /api/videos` chỉ được giữ tạm thời để rollback trong lúc xác nhận client mới.
 4. **Xoá video.** Đặt `status = 'DELETED'` chứ đừng `DELETE` row: `reactions` có FK
   `on delete cascade`, xoá thật là mất luôn bookmark của user và client sẽ không được thông báo gì.
 
