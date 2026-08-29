@@ -39,7 +39,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
 INPUT_DIR = BASE_DIR / "downloads_v2"
@@ -169,11 +169,21 @@ def normalize_master(master: Path) -> None:
     master.write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
-def convert_one(src: Path, force: bool) -> tuple[bool, str]:
-    """Tạo ABR ladder + thumbnail cho 1 file mp4."""
+def convert_one(
+    src: Path,
+    force: bool,
+    *,
+    video_id: Optional[str] = None,
+    create_thumbnail: bool = True,
+) -> tuple[bool, str]:
+    """Tạo ABR ladder và, mặc định, thumbnail cho một file MP4.
+
+    Resumable upload truyền ``video_id`` vì source luôn có tên ``original.mp4`` và đã upload
+    thumbnail từ client nên đặt ``create_thumbnail=False``. Các caller cũ giữ nguyên behavior.
+    """
     HLS_DIR.mkdir(parents=True, exist_ok=True)
     THUMB_DIR.mkdir(parents=True, exist_ok=True)
-    video_id = src.stem
+    video_id = video_id or src.stem
     out_dir = HLS_DIR / video_id
     master = out_dir / "master.m3u8"
     thumb = THUMB_DIR / f"{video_id}.jpg"
@@ -186,7 +196,7 @@ def convert_one(src: Path, force: bool) -> tuple[bool, str]:
 
     if force and out_dir.exists():
         shutil.rmtree(out_dir, ignore_errors=True)
-    if force and thumb.exists():
+    if force and create_thumbnail and thumb.exists():
         thumb.unlink()
 
     if master.exists():
@@ -212,17 +222,18 @@ def convert_one(src: Path, force: bool) -> tuple[bool, str]:
 
         normalize_master(master)
 
-    # Không seek: ffmpeg xuất đúng frame video giải mã đầu tiên, không phải frame ở 1,5 giây.
-    if thumb.exists():
-        notes.append("thumb đã có")
-    else:
-        ok, err = run([
-            "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-            "-i", str(src), "-map", "0:v:0", "-frames:v", "1", "-q:v", "2", "-an", str(thumb),
-        ])
-        if not ok:
-            return False, f"thumbnail lỗi: {err.splitlines()[-1] if err else 'không rõ lỗi'}"
-        notes.append("thumb")
+    if create_thumbnail:
+        # Không seek: ffmpeg xuất đúng frame video giải mã đầu tiên, không phải frame ở 1,5 giây.
+        if thumb.exists():
+            notes.append("thumb đã có")
+        else:
+            ok, err = run([
+                "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
+                "-i", str(src), "-map", "0:v:0", "-frames:v", "1", "-q:v", "2", "-an", str(thumb),
+            ])
+            if not ok:
+                return False, f"thumbnail lỗi: {err.splitlines()[-1] if err else 'không rõ lỗi'}"
+            notes.append("thumb")
 
     return True, "; ".join(notes)
 

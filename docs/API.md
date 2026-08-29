@@ -260,6 +260,114 @@ curl -s localhost:3000/api/categories \
 
 ---
 
+## 4d. Resumable video upload
+
+Cần auth. Đây là upload path chính cho client mới. Một video tương ứng với **một upload session**;
+các part được lưu thành file tạm trên backend, không tạo row database riêng cho từng part.
+
+```text
+POST initialize -> PUT từng part -> GET inspect khi cần resume -> POST complete
+       UPLOADING ---------------------------------------------> PROCESSING
+                                                                  |
+                                        convert HLS + upload S3 --+-> READY | FAILED
+```
+
+Client tự sinh một UUID ổn định làm `uploadId` và giữ nguyên UUID đó khi retry. `partSize` phải lấy
+từ response khởi tạo, không hard-code ở client. MVP chỉ đảm bảo resume trong cùng phiên backend;
+restart/redeploy có thể làm mất part tạm vì Render dùng ephemeral disk.
+
+### 4d.1 `POST /api/video-uploads`
+
+Khởi tạo upload bằng `multipart/form-data`. Request này chỉ gửi metadata và thumbnail, **không gửi
+MP4**.
+
+| Field | Kiểu | Ghi chú |
+|---|---|---|
+| `uploadId` | UUID | Client sinh một lần và giữ nguyên qua retry |
+| `title` | String | Bắt buộc, không được rỗng sau khi trim |
+| `caption` | String | Tuỳ chọn, mặc định `""` |
+| `categoryId` | Int | Phải tồn tại trong database |
+| `fileSize` | Int64 | Dung lượng MP4 theo byte, tối đa theo `MAX_UPLOAD_MB` |
+| `thumbnail` | JPEG | Tối đa 2 MiB |
+
+Backend tạo video ở trạng thái `UPLOADING`, upload thumbnail lên VNData và tạo workspace tạm.
+
+```json
+// 201 Created
+{
+  "uploadId": "1d41ea51-9a6a-48c1-8b8d-1b3c318cb491",
+  "videoId": "up_a1b2c3d4e5f",
+  "status": "UPLOADING",
+  "partSize": 8388608
+}
+```
+
+Gửi lại đúng `uploadId` và cùng metadata là idempotent: backend trả `200` với cùng `videoId`.
+Nếu UUID đã được dùng cho nội dung khác, backend trả `409 UPLOAD_CONFLICT`.
+
+### 4d.2 `PUT /api/video-uploads/{uploadId}/parts/{partNumber}`
+
+Body là raw bytes với `Content-Type: application/octet-stream`. `partNumber` bắt đầu từ `1`.
+Mọi part trừ part cuối phải đúng bằng `partSize`; part cuối bằng số byte còn lại.
+
+```text
+204 No Content
+```
+
+Backend ghi part theo cách atomic. Gửi lại cùng một part là an toàn và thay thế bản cũ; client chỉ
+tăng progress sau khi nhận `204`.
+
+### 4d.3 `GET /api/video-uploads/{uploadId}`
+
+Dùng sau khi request lỗi hoặc mất response để biết part nào backend đã nhận:
+
+```json
+{
+  "uploadId": "1d41ea51-9a6a-48c1-8b8d-1b3c318cb491",
+  "videoId": "up_a1b2c3d4e5f",
+  "status": "UPLOADING",
+  "partSize": 8388608,
+  "uploadedParts": [1, 2, 3],
+  "missingParts": [4, 5]
+}
+```
+
+Client chỉ gửi lại `missingParts`. Khi video không còn ở `UPLOADING`, hai mảng part được trả rỗng
+vì workspace không còn là nguồn trạng thái cần thiết.
+
+### 4d.4 `POST /api/video-uploads/{uploadId}/complete`
+
+Backend kiểm tra đủ part, ghép thành `original.mp4`, chuyển video sang `PROCESSING` và trả:
+
+```json
+// 202 Accepted
+{
+  "uploadId": "1d41ea51-9a6a-48c1-8b8d-1b3c318cb491",
+  "videoId": "up_a1b2c3d4e5f",
+  "status": "PROCESSING",
+  "partSize": 8388608
+}
+```
+
+Sau khi HTTP response kết thúc, backend lần lượt:
+
+1. kiểm tra video bằng `ffprobe`;
+2. convert MP4 thành HLS multivariant;
+3. upload và verify HLS trên VNData;
+4. cập nhật `durationMs` và status thành `READY`, hoặc `FAILED` nếu xử lý lỗi;
+5. xoá workspace upload và HLS tạm trên backend.
+
+Gọi lại `complete` không enqueue công việc trùng: `PROCESSING` trả `202`; `READY`/`FAILED` trả
+`200` với trạng thái hiện tại. Thiếu part trả `409 UPLOAD_INCOMPLETE`.
+
+Client không cần poll liên tục. Màn hình "Video của tôi" dùng `GET /api/users/{userId}/videos`
+để đọc trạng thái mới khi màn hình xuất hiện hoặc khi user chủ động refresh.
+
+Endpoint cũ `POST /api/videos` vẫn được giữ tạm thời để rollback trong lúc xác nhận luồng iOS mới,
+nhưng không nên dùng cho implementation mới.
+
+---
+
 ## 5. Reaction
 
 Ba loại: `LIKE`, `DISLIKE`, `BOOKMARK`. Mỗi `(user, video, type)` là một trạng thái bật/tắt độc lập,
@@ -504,12 +612,18 @@ Không phải thiếu, mà vì chúng thuộc về client — làm ở server s�
 |---|---|---|---|
 | `400` | `INVALID_REQUEST` | Body sai shape | Sửa payload, không retry |
 | `400` | `BATCH_TOO_LARGE` | > 200 mutation | Chia nhỏ batch |
+| `400` | `INVALID_PART_SIZE` | Part không đúng số byte backend yêu cầu | Tạo lại đúng byte range rồi gửi lại part đó |
 | `401` | `TOKEN_EXPIRED` | Token hết hạn / thiếu / hỏng | Refresh rồi thử lại |
 | `401` | `SESSION_REVOKED` | Đã login ở thiết bị khác | **Dừng retry**, bắt user login lại |
 | `403` | `FORBIDDEN` | | |
 | `404` | `NOT_FOUND` | Asset không tồn tại. Không dùng cho `/api/config` | |
 | `409` | `USERNAME_TAKEN` | Register trùng username | |
+| `409` | `UPLOAD_CONFLICT` | `uploadId` đã được dùng cho metadata khác | Không tạo UUID mới khi chỉ retry cùng upload |
+| `409` | `UPLOAD_NOT_ACTIVE` | Video không còn ở `UPLOADING` | Inspect để lấy trạng thái hiện tại |
+| `409` | `UPLOAD_EXPIRED` | Upload session đã hết hạn | Khởi tạo upload mới |
+| `409` | `UPLOAD_INCOMPLETE` | Complete khi còn thiếu/sai part | Inspect rồi gửi lại `missingParts` |
 | `429` | `RATE_LIMITED` | Kèm header `Retry-After` | Đọc `Retry-After` để tính lúc thử lại |
+| `500` | `UPLOAD_INITIALIZATION_FAILED` | Không tạo được workspace hoặc upload thumbnail | Retry initialization với cùng `uploadId` |
 | `500` | `INTERNAL` | | |
 
 Hiện **chưa bật rate limit**. Nếu bật sau này thì `429` sẽ luôn kèm `Retry-After`.
@@ -544,7 +658,9 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 - [ ] Xử lý `STALE` bằng cách nhận `current` làm sự thật
 - [ ] `REJECTED` thì bỏ hẳn khỏi queue, không retry
 - [ ] Batch ≤ 200 mutation
-- [ ] Upload: `POST /api/videos` trả `202`, phải poll `GET /api/videos/{id}` tới khi `READY`/`FAILED`
+- [ ] Upload mới: khởi tạo `POST /api/video-uploads`, gửi các part còn thiếu, rồi gọi `/complete`
+- [ ] Lấy `partSize` từ response; giữ nguyên `uploadId` và file local để retry/resume trong phiên
+- [ ] Sau `202 PROCESSING`, đọc trạng thái qua màn hình "Video của tôi"; không poll liên tục
 - [ ] Màn hình "Video của tôi": `GET /api/users/{userId}/videos` (có `status` để hiện video đang xử lý)
 - [ ] Màn hình bookmark: dùng `GET /api/users/{userId}/bookmarks` (cùng shape feed, không cần parser riêng)
 - [ ] Parser riêng cho `GET /api/reactions` (`creator`/`thumbnailUrl`/`category` khác feed)

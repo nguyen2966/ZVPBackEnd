@@ -9,6 +9,7 @@ drop function if exists reactions_sync_counters();
 drop trigger if exists app_config_entries_bump on app_config_entries;
 drop function if exists app_config_bump_version();
 drop table if exists reactions;
+drop table if exists video_upload_sessions;
 drop table if exists videos;
 drop table if exists categories;
 drop table if exists sessions;
@@ -78,6 +79,17 @@ create table videos (
 );
 -- Cố ý không đánh index cho query feed: `order by random()` phải quét và sort toàn bộ tập
 -- `status = 'READY'`, nên không index nào giúp được. Ở pool 200 row thì việc đó là miễn phí.
+
+-- Một row đại diện cho toàn bộ quá trình upload một video. Các part đã nhận nằm trên disk,
+-- không tạo thêm table/row cho từng part.
+create table video_upload_sessions (
+  id         uuid primary key,
+  video_id   text not null unique references videos(id) on delete cascade,
+  file_size  bigint not null check (file_size > 0),
+  part_size  integer not null check (part_size > 0),
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
 
 -- ---------- 2.3 Reactions ----------
 

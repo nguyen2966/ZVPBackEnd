@@ -22,10 +22,6 @@ Video chỉ vào feed khi status='READY', nên bước 3 không hề làm lộ v
 from __future__ import annotations
 
 import asyncio
-import json
-import re
-import shutil
-import subprocess
 import uuid
 from pathlib import Path
 
@@ -37,6 +33,7 @@ from ..errors import ApiError
 from ..security import Principal, current_principal
 from ..serializers import feed_video
 from ..urls import request_base_url
+from ..video_processing import probe_duration_ms
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
@@ -52,25 +49,6 @@ def _new_video_id() -> str:
     và chỉ dùng [a-z0-9_] nên an toàn khi làm tên file lẫn key S3.
     """
     return f"up_{uuid.uuid4().hex[:11]}"
-
-
-def _probe_duration_ms(path: Path) -> int:
-    """Đọc độ dài thật của file. Trả 0 nếu ffprobe không đọc được (file hỏng/không phải video)."""
-    proc = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-         "-select_streams", "v:0", "-show_entries", "stream=codec_type",
-         "-of", "json", str(path)],
-        capture_output=True, text=True, encoding="utf-8", errors="replace",
-    )
-    if proc.returncode != 0:
-        return 0
-    try:
-        data = json.loads(proc.stdout)
-        if not any(s.get("codec_type") == "video" for s in data.get("streams", [])):
-            return 0                                  # có file nhưng không có luồng video
-        return int(float(data["format"]["duration"]) * 1000)
-    except (KeyError, ValueError, TypeError):
-        return 0
 
 
 async def _save_upload(upload: UploadFile, dest: Path) -> int:
@@ -149,7 +127,7 @@ async def upload_video(
     await _save_upload(file, source)
 
     # Kiểm tra ngay tại request: file hỏng thì báo lỗi luôn thay vì để user chờ rồi nhận FAILED.
-    duration_ms = await asyncio.to_thread(_probe_duration_ms, source)
+    duration_ms = await asyncio.to_thread(probe_duration_ms, source)
     if duration_ms <= 0:
         source.unlink(missing_ok=True)
         raise ApiError(400, "INVALID_REQUEST", "File không phải video hợp lệ hoặc không đọc được")
