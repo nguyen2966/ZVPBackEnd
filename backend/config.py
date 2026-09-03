@@ -70,3 +70,20 @@ UPLOAD_STORAGE_DIR = Path(
 UPLOAD_PART_SIZE_BYTES = 8 * 1024 * 1024
 UPLOAD_SESSION_TTL_SECONDS = 24 * 60 * 60
 MAX_UPLOAD_THUMBNAIL_BYTES = 2 * 1024 * 1024
+
+# Pool of avatar URLs assigned to new users / seed creators.
+# Hosted on VNDATA S3 bucket zvideo-media/avatars/.
+AVATAR_POOL = [
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar1.webp",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar2.webp",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar3.jpg",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar4.jpg",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar5.jpg",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar6.jpg",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar7.jpg",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar8.webp",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar9.webp",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar10.png",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar11.jpg",
+    "https://s3-hcm-r2.s3cloud.vn/zvideo-media/avatars/avatar12.jpg",
+]

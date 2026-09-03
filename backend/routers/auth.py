@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import random
+
 import asyncpg
 from fastapi import APIRouter, Response
 
 from .. import db
-from ..config import ACCESS_TOKEN_TTL_SECONDS
+from ..config import ACCESS_TOKEN_TTL_SECONDS, AVATAR_POOL
 from ..errors import ApiError
 from ..models import LoginRequest, RefreshRequest, RegisterRequest
 from ..security import (
@@ -22,14 +24,15 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/register", status_code=201)
 async def register(body: RegisterRequest, response: Response):
+    avatar_url = random.choice(AVATAR_POOL)
     try:
         row = await db.pool().fetchrow(
             """
-            insert into users (username, display_name, password_hash)
-            values ($1, $2, $3)
+            insert into users (username, display_name, avatar_url, password_hash)
+            values ($1, $2, $3, $4)
             returning id, username, display_name
             """,
-            body.username, body.displayName, hash_password(body.password),
+            body.username, body.displayName, avatar_url, hash_password(body.password),
         )
     except asyncpg.UniqueViolationError:
         raise ApiError(409, "USERNAME_TAKEN", "Username already exists")

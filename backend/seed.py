@@ -29,13 +29,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import random
 import re
 import sys
 from pathlib import Path
 
 import asyncpg
 
-from .config import BASE_DIR, DATABASE_DSN
+from .config import BASE_DIR, DATABASE_DSN, AVATAR_POOL
 from .config_payload import flatten
 from .routers.config import DEFAULT_PAYLOAD
 from .seed_engagement import counts_for
@@ -125,29 +126,32 @@ async def seed(conn: asyncpg.Connection) -> None:
 
     creator_ids: list[str] = []
     used_usernames: set[str] = set()
+    random.shuffle(AVATAR_POOL)
     for idx, src in enumerate(seen):
         base = re.sub(r"[^a-z0-9]+", "", src["uploader"].lower()) or "creator"
         username = base[:24]
         while username in used_usernames:            # tên uploader có thể trùng sau khi normalize
             username = f"{base[:20]}{idx}"
         used_usernames.add(username)
+        avatar_url = AVATAR_POOL[idx % len(AVATAR_POOL)]
         creator_ids.append(await conn.fetchval(
             """
             insert into users (username, display_name, avatar_url, password_hash)
             values ($1, $2, $3, $4) returning id
             """,
-            username, src["uploader"], src["avatar_url"], hash_password("password123"),
+            username, src["uploader"], avatar_url, hash_password("password123"),
         ))
     print(f"→ {len(creator_ids)} creator")
 
     # ---- User test ----
-    for username, display_name, password in TEST_USERS:
+    for i, (username, display_name, password) in enumerate(TEST_USERS):
+        avatar_url = AVATAR_POOL[(len(creator_ids) + i + 1) % len(AVATAR_POOL)]
         await conn.execute(
             """
             insert into users (username, display_name, avatar_url, password_hash)
             values ($1, $2, $3, $4)
             """,
-            username, display_name, seen[0]["avatar_url"], hash_password(password),
+            username, display_name, avatar_url, hash_password(password),
         )
     print(f"→ {len(TEST_USERS)} user test: {', '.join(u for u, _, _ in TEST_USERS)} (mật khẩu: password123)")
 

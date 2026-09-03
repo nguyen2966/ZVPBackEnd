@@ -29,6 +29,9 @@ from typing import Any
 from urllib.parse import urljoin
 
 import httpx
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 BASE = "http://127.0.0.1:3000"
 
