@@ -117,17 +117,25 @@ def _ensure_uploading(row) -> None:
 
 async def _read_thumbnail(thumbnail: UploadFile) -> bytes:
     if thumbnail.content_type not in {"image/jpeg", "image/jpg"}:
-        raise ApiError(400, "INVALID_REQUEST", "Thumbnail phải là JPEG")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            "Thumbnail phải là JPEG",
+            errors=[{"field": "thumbnail", "rule": "content_type", "message": "Thumbnail phải là JPEG (image/jpeg)"}],
+        )
 
     content = await thumbnail.read(MAX_UPLOAD_THUMBNAIL_BYTES + 1)
     if not content or len(content) > MAX_UPLOAD_THUMBNAIL_BYTES:
         raise ApiError(
-            400,
-            "INVALID_REQUEST",
+            413, "FILE_TOO_LARGE",
             f"Thumbnail phải nhỏ hơn hoặc bằng {MAX_UPLOAD_THUMBNAIL_BYTES // (1024 * 1024)}MB",
+            details={"max_size_bytes": MAX_UPLOAD_THUMBNAIL_BYTES, "actual_size_bytes": len(content) if content else 0},
         )
     if not content.startswith(b"\xff\xd8") or not content.endswith(b"\xff\xd9"):
-        raise ApiError(400, "INVALID_REQUEST", "Thumbnail JPEG không hợp lệ")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            "Thumbnail JPEG không hợp lệ",
+            errors=[{"field": "thumbnail", "rule": "jpeg_format", "message": "File không phải JPEG hợp lệ (thiếu SOI/EOI marker)"}],
+        )
     return content
 
 
@@ -178,12 +186,22 @@ async def initialize_upload(
     normalized_title = title.strip()
     normalized_caption = caption.strip()
     if not normalized_title:
-        raise ApiError(400, "INVALID_REQUEST", "Thiếu title")
-    if fileSize <= 0 or fileSize > MAX_UPLOAD_BYTES:
         raise ApiError(
-            400,
-            "INVALID_REQUEST",
-            f"fileSize phải nằm trong khoảng 1...{MAX_UPLOAD_BYTES}",
+            422, "INVALID_METADATA",
+            "Thiếu title",
+            errors=[{"field": "title", "rule": "min_length", "message": "title không được rỗng"}],
+        )
+    if fileSize <= 0:
+        raise ApiError(
+            422, "INVALID_METADATA",
+            "fileSize phải lớn hơn 0",
+            errors=[{"field": "fileSize", "rule": "min", "message": "fileSize phải >= 1"}],
+        )
+    if fileSize > MAX_UPLOAD_BYTES:
+        raise ApiError(
+            413, "FILE_TOO_LARGE",
+            f"fileSize vượt quá giới hạn {MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
+            details={"max_size_bytes": MAX_UPLOAD_BYTES, "actual_size_bytes": fileSize},
         )
 
     existing = await db.pool().fetchrow(_SESSION_SQL, uploadId)
@@ -206,7 +224,11 @@ async def initialize_upload(
         categoryId,
     )
     if not category_exists:
-        raise ApiError(400, "INVALID_REQUEST", f"categoryId không tồn tại: {categoryId}")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            f"categoryId không tồn tại: {categoryId}",
+            errors=[{"field": "categoryId", "rule": "exists", "message": f"categoryId={categoryId} không tồn tại"}],
+        )
 
     thumbnail_content = await _read_thumbnail(thumbnail)
     video_id = _new_video_id()

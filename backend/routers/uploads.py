@@ -62,8 +62,9 @@ async def _save_upload(upload: UploadFile, dest: Path) -> int:
                 out.close()
                 dest.unlink(missing_ok=True)
                 raise ApiError(
-                    400, "INVALID_REQUEST",
+                    413, "FILE_TOO_LARGE",
                     f"File vượt quá {MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
+                    details={"max_size_bytes": MAX_UPLOAD_BYTES, "actual_size_bytes": written},
                 )
             out.write(chunk)
     return written
@@ -114,13 +115,25 @@ async def upload_video(
     """Nhận file .mp4, trả 202 ngay; việc convert/upload chạy nền."""
     filename = file.filename or ""
     if not filename.lower().endswith(".mp4"):
-        raise ApiError(400, "INVALID_REQUEST", "Chỉ nhận file .mp4")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            "Chỉ nhận file .mp4",
+            errors=[{"field": "file", "rule": "file_type", "message": "Chỉ nhận file .mp4"}],
+        )
     if not title.strip():
-        raise ApiError(400, "INVALID_REQUEST", "Thiếu title")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            "Thiếu title",
+            errors=[{"field": "title", "rule": "min_length", "message": "title không được rỗng"}],
+        )
 
     category = await db.pool().fetchrow("select id from categories where id = $1", categoryId)
     if category is None:
-        raise ApiError(400, "INVALID_REQUEST", f"categoryId không tồn tại: {categoryId}")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            f"categoryId không tồn tại: {categoryId}",
+            errors=[{"field": "categoryId", "rule": "exists", "message": f"categoryId={categoryId} không tồn tại"}],
+        )
 
     video_id = _new_video_id()
     source = SOURCE_DIR / f"{video_id}.mp4"
@@ -130,7 +143,11 @@ async def upload_video(
     duration_ms = await asyncio.to_thread(probe_duration_ms, source)
     if duration_ms <= 0:
         source.unlink(missing_ok=True)
-        raise ApiError(400, "INVALID_REQUEST", "File không phải video hợp lệ hoặc không đọc được")
+        raise ApiError(
+            422, "INVALID_METADATA",
+            "File không phải video hợp lệ hoặc không đọc được",
+            errors=[{"field": "file", "rule": "readable", "message": "ffprobe không đọc được duration của file"}],
+        )
 
     # Key trên S3 suy được từ video_id nên biết trước URL cuối cùng, không cần cập nhật 2 lần.
     from vndata_s3 import S3Settings, build_asset_urls

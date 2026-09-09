@@ -317,7 +317,8 @@ def main() -> int:
     check("xem bookmark user khác -> 403", r.status_code == 403, r.text)
     check("code = FORBIDDEN", r.json()["error"]["code"] == "FORBIDDEN", r.text)
     r = client.get("/api/users/not-a-uuid/bookmarks", headers=auth_a)
-    check("userId sai định dạng -> 400", r.status_code == 400, r.text)
+    check("userId sai định dạng -> 422 (metadata validation)",
+          r.status_code == 422, r.text)
 
     # ---------------------------------------------------------------- upload
     section("18. POST /api/videos (upload) - kiểm tra đầu vào")
@@ -327,23 +328,31 @@ def main() -> int:
     r = client.post("/api/videos", headers=auth_a,
                     files={"file": ("x.txt", b"hello", "text/plain")},
                     data={"title": "t", "categoryId": cid})
-    check("không phải .mp4 -> 400", r.status_code == 400, r.text)
-    check("code = INVALID_REQUEST", r.json()["error"]["code"] == "INVALID_REQUEST", r.text)
+    check("không phải .mp4 -> 422", r.status_code == 422, r.text)
+    check("code = INVALID_METADATA", r.json()["error"]["code"] == "INVALID_METADATA", r.text)
+    check("errors có field", "errors" in r.json()["error"], r.text)
 
     r = client.post("/api/videos", headers=auth_a,
                     files={"file": ("junk.mp4", tiny_mp4, "video/mp4")},
                     data={"title": "t", "categoryId": cid})
-    check("mp4 hỏng -> 400 (ffprobe không đọc được)", r.status_code == 400, r.text)
+    check("mp4 hỏng -> 422 (ffprobe không đọc được)", r.status_code == 422, r.text)
+    check("code = INVALID_METADATA", r.json()["error"]["code"] == "INVALID_METADATA", r.text)
 
     r = client.post("/api/videos", headers=auth_a,
                     files={"file": ("a.mp4", tiny_mp4, "video/mp4")},
                     data={"title": "t", "categoryId": "999999"})
-    check("categoryId không tồn tại -> 400", r.status_code == 400, r.text)
+    check("categoryId không tồn tại -> 422", r.status_code == 422, r.text)
+    check("code = INVALID_METADATA", r.json()["error"]["code"] == "INVALID_METADATA", r.text)
+    check("errors chỉ rõ categoryId",
+          any(e.get("field") == "categoryId" for e in r.json()["error"].get("errors", [])), r.text)
 
     r = client.post("/api/videos", headers=auth_a,
                     files={"file": ("a.mp4", tiny_mp4, "video/mp4")},
                     data={"title": "  ", "categoryId": cid})
-    check("title rỗng -> 400", r.status_code == 400, r.text)
+    check("title rỗng -> 422", r.status_code == 422, r.text)
+    check("code = INVALID_METADATA", r.json()["error"]["code"] == "INVALID_METADATA", r.text)
+    check("errors chỉ rõ title",
+          any(e.get("field") == "title" for e in r.json()["error"].get("errors", [])), r.text)
 
     r = client.post("/api/videos",
                     files={"file": ("a.mp4", tiny_mp4, "video/mp4")},
@@ -379,8 +388,8 @@ def main() -> int:
           str({i["status"] for i in r.json()["items"]}))
 
     check("thiếu token -> 401", client.get(f"/api/users/{me}/videos").status_code == 401)
-    check("userId sai định dạng -> 400",
-          client.get("/api/users/not-a-uuid/videos", headers=auth_a).status_code == 400)
+    check("userId sai định dạng -> 422 (metadata validation)",
+          client.get("/api/users/not-a-uuid/videos", headers=auth_a).status_code == 422)
     r = client.get(f"/api/users/{uuid.uuid4()}/videos", headers=auth_a)
     check("userId không tồn tại -> 200 + rỗng",
           r.status_code == 200 and r.json()["items"] == [], r.text)
