@@ -78,18 +78,27 @@ def run(cmd: list[str]) -> tuple[bool, str]:
     return proc.returncode == 0, (proc.stderr or "").strip()
 
 
-def probe_source(src: Path) -> tuple[int, int, float]:
-    """Đọc width/height/fps của video nguồn bằng ffprobe."""
+def probe_source(src: Path) -> tuple[int, int, float, bool]:
+    """
+    Đọc width/height/fps và có audio hay không của video nguồn bằng ffprobe.
+    Trả về (width, height, fps, has_audio).
+    """
     cmd = [
-        "ffprobe", "-v", "error", "-select_streams", "v:0",
-        "-show_entries", "stream=width,height,r_frame_rate",
+        "ffprobe", "-v", "error",
+        "-show_entries", "stream=codec_type,width,height,r_frame_rate",
         "-of", "json", str(src),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
-    stream = json.loads(proc.stdout)["streams"][0]
+    streams = json.loads(proc.stdout).get("streams", [])
+    has_audio = any(s.get("codec_type") == "audio" for s in streams)
+    # Lọc stream video
+    video_streams = [s for s in streams if s.get("codec_type") == "video"]
+    if not video_streams:
+        raise RuntimeError("Không tìm thấy video stream")
+    stream = video_streams[0]
     num, _, den = stream["r_frame_rate"].partition("/")
     fps = float(num) / float(den or 1)
-    return int(stream["width"]), int(stream["height"]), fps
+    return int(stream["width"]), int(stream["height"]), fps, has_audio
 
 
 def tiers_for(source_height: int) -> list[Tier]:
@@ -104,7 +113,7 @@ def tiers_for(source_height: int) -> list[Tier]:
     return tiers
 
 
-def build_cmd(src: Path, out_dir: Path, video_id: str, tiers: list[Tier], fps: float, use_gpu: bool) -> list[str]:
+def build_cmd(src: Path, out_dir: Path, video_id: str, tiers: list[Tier], fps: float, use_gpu: bool, has_audio: bool = True) -> list[str]:
     """Dựng lệnh ffmpeg tạo toàn bộ ABR ladder trong 1 lần chạy (1 lần decode, N lần encode)."""
     n = len(tiers)
     gop = max(1, round(fps * SEGMENT_SECONDS))
@@ -120,7 +129,9 @@ def build_cmd(src: Path, out_dir: Path, video_id: str, tiers: list[Tier], fps: f
     cmd += ["-i", str(src), "-filter_complex", filter_complex]
 
     for i in range(n):
-        cmd += ["-map", f"[v{i}]", "-map", "0:a"]
+        cmd += ["-map", f"[v{i}]"]
+        if has_audio:
+            cmd += ["-map", "0:a"]
 
     if use_gpu:
         cmd += ["-c:v", "h264_nvenc", "-preset", "p4", "-forced-idr", "1"]
@@ -136,9 +147,13 @@ def build_cmd(src: Path, out_dir: Path, video_id: str, tiers: list[Tier], fps: f
             f"-bufsize:v:{i}", f"{t.bufsize_k}k",
         ]
 
-    var_map = " ".join(f"v:{i},a:{i},name:{t.name}" for i, t in enumerate(tiers))
+    # var_stream_map: bỏ audio nếu nguồn không có âm thanh
+    var_map = " ".join(
+        (f"v:{i},a:{i}" if has_audio else f"v:{i}")
+        + f",name:{t.name}"
+        for i, t in enumerate(tiers)
+    )
     cmd += [
-        "-c:a", "aac", "-b:a", "128k",
         "-f", "hls",
         "-hls_time", str(SEGMENT_SECONDS),
         "-hls_playlist_type", "vod",              # -> tự sinh #EXT-X-ENDLIST (des.md §2)
@@ -203,7 +218,7 @@ def convert_one(
         notes.append("HLS đã có")
     else:
         try:
-            _, height, fps = probe_source(src)
+            _, height, fps, has_audio = probe_source(src)
         except Exception as exc:  # noqa: BLE001 - file hỏng thì bỏ qua, chạy tiếp video khác
             return False, f"ffprobe lỗi: {exc}"
 
@@ -211,9 +226,9 @@ def convert_one(
         for tier in tiers:
             (out_dir / tier.name).mkdir(parents=True, exist_ok=True)
 
-        ok, err = run(build_cmd(src, out_dir, video_id, tiers, fps, use_gpu=True))
+        ok, err = run(build_cmd(src, out_dir, video_id, tiers, fps, use_gpu=True, has_audio=has_audio))
         if not ok:
-            ok, err = run(build_cmd(src, out_dir, video_id, tiers, fps, use_gpu=False))
+            ok, err = run(build_cmd(src, out_dir, video_id, tiers, fps, use_gpu=False, has_audio=has_audio))
             notes.append(f"{len(tiers)} tier (CPU)" if ok else "HLS lỗi")
         else:
             notes.append(f"{len(tiers)} tier (GPU)")
