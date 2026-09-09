@@ -186,11 +186,13 @@ select v.id, v.title, v.caption, v.duration_ms, v.playback_url, v.thumbnail_url,
 _USER_VIDEOS_SQL = """
 select v.id, v.title, v.caption, v.duration_ms, v.playback_url, v.thumbnail_url,
        v.like_count, v.dislike_count, v.bookmark_count, v.status,
+       s.id as upload_id,
        c.name as category_name,
        u.id as creator_id, u.display_name, u.username, u.avatar_url
   from videos v
   join users u on u.id = v.creator_id
   left join categories c on c.id = v.category_id
+  left join video_upload_sessions s on s.video_id = v.id
  where v.creator_id = $1
    and v.status <> 'DELETED'
    and ($2::boolean or v.status = 'READY')
@@ -206,11 +208,12 @@ async def list_user_videos(
 ):
     """
     Danh sách video do user đó upload, cùng shape với /api/feed nhưng mỗi item có thêm
-    `status` - client dùng chung parser, đọc thêm `status` nếu cần.
+    `status`. Với chính chủ, video `UPLOADING` còn có `uploadId` để client nối lại file
+    đã stage trong Application Support với đúng resumable session sau khi app khởi động lại.
 
     Khác /api/users/{id}/bookmarks (chỉ xem được của chính mình): video upload vốn là nội
     dung công khai, ai cũng xem được trang của người khác. Chỉ giấu phần riêng tư: video
-    đang PROCESSING hoặc đã FAILED thì chỉ chính chủ mới thấy.
+    đang UPLOADING/PROCESSING hoặc đã FAILED thì chỉ chính chủ mới thấy.
     """
     is_self = user_id == principal.user_id
     rows = await db.pool().fetch(_USER_VIDEOS_SQL, user_id, is_self)
@@ -233,6 +236,13 @@ async def list_user_videos(
             {
                 "position": i,
                 "status": row["status"],
+                "uploadId": (
+                    str(row["upload_id"])
+                    if is_self
+                    and row["status"] == "UPLOADING"
+                    and row["upload_id"] is not None
+                    else None
+                ),
                 "video": feed_video(row, viewer[row["id"]], base),
             }
             for i, row in enumerate(rows)

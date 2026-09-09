@@ -471,6 +471,11 @@ thật. Video chỉ xuất hiện trong feed khi `READY`; màn hình "Video củ
 trạng thái còn lại. Part tạm chỉ được bảo đảm trong cùng phiên backend của MVP; restart/redeploy
 recovery chưa thuộc phạm vi.
 
+Với chính chủ, mỗi item `UPLOADING` trong `GET /api/users/{userId}/videos` trả thêm `uploadId`.
+Client dùng ID này để nối video đã lưu trong Application Support với session backend và chỉ gửi
+lại `missingParts` sau khi app khởi động lại. Các trạng thái khác và người xem khác nhận
+`uploadId: null`.
+
 
 Hợp đồng request/response và lỗi chi tiết nằm trong [API.md](API.md#4d-resumable-video-upload).
 

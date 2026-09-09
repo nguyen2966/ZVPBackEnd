@@ -451,7 +451,8 @@ Cần auth. Danh sách video user đó đã upload, cùng shape với `/api/feed
   "items": [
     {
       "position": 0,
-      "status": "READY",
+      "status": "UPLOADING",
+      "uploadId": "1d41ea51-9a6a-48c1-8b8d-1b3c318cb491",
       "video": { /* y hệt object video ở mục 4 */ }
     }
   ]
@@ -461,8 +462,9 @@ Cần auth. Danh sách video user đó đã upload, cùng shape với `/api/feed
 | | |
 |---|---|
 | Thứ tự | Mới upload nhất lên đầu (`created_at desc`) |
-| `status` | `READY` · `PROCESSING` · `FAILED` |
-| Ai thấy gì | Mọi người đều thấy `READY`; `PROCESSING`/`FAILED` **chỉ** chính chủ thấy |
+| `status` | `UPLOADING` · `PROCESSING` · `READY` · `FAILED` |
+| `uploadId` | UUID khi chính chủ có thể resume video `UPLOADING`; `null` ở trạng thái khác |
+| Ai thấy gì | Mọi người đều thấy `READY`; `UPLOADING`/`PROCESSING`/`FAILED` **chỉ** chính chủ thấy |
 
 | Trường hợp | Kết quả |
 |---|---|
@@ -470,7 +472,7 @@ Cần auth. Danh sách video user đó đã upload, cùng shape với `/api/feed
 | `userId` không đúng dạng UUID | `422 INVALID_METADATA` |
 | `userId` không tồn tại | `200` với `items: []` |
 
-> Video đang `PROCESSING` hoặc đã `FAILED` là trạng thái riêng tư của người upload.
+> Video đang `UPLOADING`/`PROCESSING` hoặc đã `FAILED` là trạng thái riêng tư của người upload.
 > Không nên lộ ra bên ngoài — chỉ chính chủ thấy.
 
 ---
@@ -811,9 +813,9 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 - [ ] `REJECTED` thì bỏ hẳn khỏi queue, không retry
 - [ ] Batch ≤ 200 mutation
 - [ ] Upload mới: khởi tạo `POST /api/video-uploads`, gửi các part còn thiếu, rồi gọi `/complete`
-- [ ] Lấy `partSize` từ response; giữ nguyên `uploadId` và file local để retry/resume trong phiên
+- [ ] Lấy `partSize` từ response; giữ file trong Application Support theo `uploadId` để retry/resume cả sau khi app khởi động lại
 - [ ] Sau `202 PROCESSING`, đọc trạng thái qua màn hình "Video của tôi"; không poll liên tục
-- [ ] Màn hình "Video của tôi": `GET /api/users/{userId}/videos` (có `status` để hiện video đang xử lý)
+- [ ] Màn hình "Video của tôi": `GET /api/users/{userId}/videos` (có `status`; chính chủ nhận `uploadId` cho video `UPLOADING` để resume)
 - [ ] Màn hình bookmark: dùng `GET /api/users/{userId}/bookmarks` (cùng shape feed, không cần parser riêng)
 - [ ] Parser riêng cho `GET /api/reactions` (`creator`/`thumbnailUrl`/`category` khác feed)
 - [ ] Cho phép cleartext HTTP nếu test qua LAN (xem [../SERVING.md](../SERVING.md))
