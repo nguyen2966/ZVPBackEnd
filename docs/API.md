@@ -59,7 +59,17 @@ Không dùng epoch. Client gửi lên cũng phải đúng dạng này.
 **Shape lỗi** — mọi lỗi đều đúng một dạng:
 
 ```json
-{ "error": { "code": "SESSION_REVOKED", "message": "Signed in on another device" } }
+{ "error": { "code": "SESSION_REVOKED_CONCURRENT_LOGIN", "message": "Your account has been logged in on another device." } }
+```
+
+Một số lỗi có thêm `details` hoặc `errors` để client xử lý tự động:
+
+```json
+// 413 FILE_TOO_LARGE
+{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn 200MB", "details": { "max_size_bytes": 209715200, "actual_size_bytes": 500000000 } } }
+
+// 422 INVALID_METADATA
+{ "error": { "code": "INVALID_METADATA", "message": "Metadata validation failed.", "errors": [{ "field": "title", "rule": "min_length", "message": "title không được rỗng" }] } }
 ```
 
 ---
@@ -71,22 +81,30 @@ Không dùng epoch. Client gửi lên cũng phải đúng dạng này.
 ```
 login ──► accessToken (1 giờ) + refreshToken
              │
-             ├─ 401 TOKEN_EXPIRED   ──► POST /api/auth/refresh ──► accessToken mới
-             │
-             └─ 401 SESSION_REVOKED ──► DỪNG retry, bắt user login lại
+             ├─ 401 TOKEN_EXPIRED              ──► POST /api/auth/refresh ──► accessToken mới
+             ├─ 401 SESSION_REVOKED_CONCURRENT_LOGIN ──► DỪNG retry, bắt user login lại
+             └─ 401 SESSION_INVALID             ──► DỪNG retry, bắt user login lại
 ```
 
 > **Chi tiết quan trọng nhất của toàn bộ API client-side.**
-> Hai `code` này cùng nằm trên HTTP 401 nhưng ý nghĩa trái ngược. Gộp chúng lại thì client sẽ
+> Ba `code` này cùng nằm trên HTTP 401 nhưng ý nghĩa khác nhau. Gộp chúng lại thì client sẽ
 > đốt hết số lần retry để refresh một session đã chết vĩnh viễn.
+
+### Session revocation — phân biệt được bị đá hay hết phiên
+
+| `revoked_reason` | `code` trả về | Nghĩa |
+|---|---|---|
+| `CONCURRENT_LOGIN` | `SESSION_REVOKED_CONCURRENT_LOGIN` | Thiết bị khác đã đăng nhập, phiên này bị đá |
+| `LOGOUT` / `ADMIN` | `SESSION_INVALID` | User đã logout hoặc admin đã thu hồi |
+| *(token không tồn tại)* | `SESSION_INVALID` | Refresh token không hợp lệ hoặc chưa bao giờ tồn tại |
 
 ### Mỗi user chỉ một session active
 
-Login thành công sẽ **revoke toàn bộ session cũ** của user đó (`revoked_reason = 'NEW_LOGIN'`).
+Login thành công sẽ **revoke toàn bộ session cũ** của user đó (`revoked_reason = 'CONCURRENT_LOGIN'`).
 Ràng buộc này do database ép bằng partial unique index, không code path nào lách được.
 
 Hệ quả client cần chuẩn bị: đang dùng máy A, user login máy B → **mọi request từ máy A** (kể cả
-`/api/auth/refresh`) trả `401 SESSION_REVOKED` ngay lập tức. Đây là hành vi đúng, không phải lỗi.
+`/api/auth/refresh`) trả `401 SESSION_REVOKED_CONCURRENT_LOGIN` ngay lập tức. Đây là hành vi đúng, không phải lỗi.
 
 ### `POST /api/auth/register`
 
@@ -130,7 +148,12 @@ Không cần auth.
 { "accessToken": "…", "expiresInSeconds": 3600 }
 ```
 
-`401 SESSION_REVOKED` nếu refresh token thuộc session đã bị revoke.
+| Kết quả | HTTP | `code` | `message` |
+|---|---|---|---|
+| Thành công | 200 | — | accessToken mới |
+| Token không tồn tại | 401 | `SESSION_INVALID` | "Invalid or ended session." |
+| Session bị revoke vì thiết bị khác đăng nhập | 401 | `SESSION_REVOKED_CONCURRENT_LOGIN` | "Your account has been logged in on another device." |
+| Session bị revoke vì logout/admin | 401 | `SESSION_INVALID` | "Invalid or ended session." |
 
 ---
 
@@ -216,7 +239,7 @@ này một cách có chủ đích ở phía server.
 |---|---|
 | Thiếu/hết token | `401` |
 | `userId` của người khác | `403 FORBIDDEN` |
-| `userId` không đúng dạng UUID | `400 INVALID_REQUEST` |
+| `userId` không đúng dạng UUID | `422 INVALID_METADATA` |
 
 Bỏ bookmark (`type=BOOKMARK, active=false`) thì item biến mất khỏi endpoint này ngay — server
 vẫn giữ tombstone nội bộ cho LWW nhưng không lộ ra (bất biến 4).
@@ -368,6 +391,110 @@ nhưng không nên dùng cho implementation mới.
 
 ---
 
+## 4e. `POST /api/videos` — upload video trực tiếp
+
+Cần auth. Upload một file MP4 cùng metadata trong một request. Server trả `202` ngay và
+xử lý nền (convert HLS → upload S3 → verify → READY/FAILED).
+
+> **Tại sao trả 202?** Convert 5 rendition + upload ~12 object mất 15–30s. Giữ HTTP request mở
+> suốt thời gian đó sẽ đụng timeout của client/proxy.
+
+```
+202 Accepted
+{
+  "videoId": "up_a1b2c3d4e5",
+  "status": "PROCESSING",
+  "durationMs": 25134
+}
+```
+
+Client **phải poll** `GET /api/videos/{videoId}` cho tới khi `status` khác `PROCESSING`:
+`READY` = phát được, `FAILED` = đã hỏng, đừng chờ nữa.
+
+### Request
+
+`Content-Type: multipart/form-data`
+
+| Field | Kiểu | Ghi chú |
+|---|---|---|
+| `file` | binary | Bắt buộc, phải có đuôi `.mp4` |
+| `title` | String | Bắt buộc, không được rỗng sau khi trim |
+| `caption` | String | Tuỳ chọn, mặc định `""` |
+| `categoryId` | Int | Phải tồn tại trong database |
+
+### Trạng thái xử lý
+
+```
+UPLOADING ──► PROCESSING ──► READY | FAILED
+                      (convert HLS + S3 upload)
+```
+
+Client gọi `GET /api/videos/{videoId}` để theo dõi. Video chỉ vào feed khi `status = READY`.
+
+### Lỗi
+
+| HTTP | `code` | Khi nào |
+|---|---|---|
+| `401` | `TOKEN_EXPIRED` | Thiếu/hết/hỏng token |
+| `413` | `FILE_TOO_LARGE` | File vượt quá 200MB |
+| `422` | `INVALID_METADATA` | File không phải `.mp4`, title rỗng, `categoryId` không tồn tại, ffprobe không đọc được |
+| `404` | `NOT_FOUND` | Video không tồn tại (chỉ dùng cho `GET /api/videos/{id}`) |
+
+---
+
+## 4f. `GET /api/users/{userId}/videos`
+
+Cần auth. Danh sách video user đó đã upload, cùng shape với `/api/feed` nhưng mỗi item có thêm `status`.
+
+```json
+{
+  "items": [
+    {
+      "position": 0,
+      "status": "READY",
+      "video": { /* y hệt object video ở mục 4 */ }
+    }
+  ]
+}
+```
+
+| | |
+|---|---|
+| Thứ tự | Mới upload nhất lên đầu (`created_at desc`) |
+| `status` | `READY` · `PROCESSING` · `FAILED` |
+| Ai thấy gì | Mọi người đều thấy `READY`; `PROCESSING`/`FAILED` **chỉ** chính chủ thấy |
+
+| Trường hợp | Kết quả |
+|---|---|
+| Thiếu/hết token | `401` |
+| `userId` không đúng dạng UUID | `422 INVALID_METADATA` |
+| `userId` không tồn tại | `200` với `items: []` |
+
+> Video đang `PROCESSING` hoặc đã `FAILED` là trạng thái riêng tư của người upload.
+> Không nên lộ ra bên ngoài — chỉ chính chủ thấy.
+
+---
+
+## 4g. `GET /api/videos/{videoId}`
+
+Cần auth. Dùng để **poll trạng thái** sau khi upload. Trả cùng object `video` với `/api/feed`
+cộng thêm `status` ở top-level.
+
+```json
+{
+  "status": "PROCESSING",
+  "video": { /* y hệt object video ở mục 4 */ }
+}
+```
+
+| `status` | Client làm gì |
+|---|---|
+| `PROCESSING` | Tiếp tục poll |
+| `READY` | Hiển thị video |
+| `FAILED` | Bỏ cuộc, thông báo user video không hợp lệ |
+
+---
+
 ## 5. Reaction
 
 Ba loại: `LIKE`, `DISLIKE`, `BOOKMARK`. Mỗi `(user, video, type)` là một trạng thái bật/tắt độc lập,
@@ -394,7 +521,7 @@ Cần auth. Nhận **một array** để flush cả queue offline trong một ro
 | `active` | `true` = bật reaction, `false` = bỏ reaction |
 | `clientUpdatedAt` | **Thời điểm user bấm**, không phải lúc gửi request. Đây là khoá quyết định LWW |
 
-- Tối đa **200 mutation** mỗi request, vượt thì `400 BATCH_TOO_LARGE`.
+- Tối đa **200 mutation** mỗi request, vượt thì `422 BATCH_TOO_LARGE`.
 - Toàn bộ batch áp trong **một transaction**, theo đúng thứ tự trong array.
 - **Luôn trả `200`** khi request hợp lệ; lỗi báo theo từng item.
 
@@ -610,23 +737,45 @@ Không phải thiếu, mà vì chúng thuộc về client — làm ở server s�
 
 | HTTP | `code` | Khi nào | Client làm gì |
 |---|---|---|---|
-| `400` | `INVALID_REQUEST` | Body sai shape | Sửa payload, không retry |
-| `400` | `BATCH_TOO_LARGE` | > 200 mutation | Chia nhỏ batch |
+| `400` | `INVALID_REQUEST` | Body sai shape hoặc lỗi parse chung | Sửa payload, không retry |
 | `400` | `INVALID_PART_SIZE` | Part không đúng số byte backend yêu cầu | Tạo lại đúng byte range rồi gửi lại part đó |
 | `401` | `TOKEN_EXPIRED` | Token hết hạn / thiếu / hỏng | Refresh rồi thử lại |
-| `401` | `SESSION_REVOKED` | Đã login ở thiết bị khác | **Dừng retry**, bắt user login lại |
-| `403` | `FORBIDDEN` | | |
-| `404` | `NOT_FOUND` | Asset không tồn tại. Không dùng cho `/api/config` | |
+| `401` | `SESSION_REVOKED_CONCURRENT_LOGIN` | Thiết bị khác đã login → phiên này bị đá | **Dừng retry**, bắt user login lại |
+| `401` | `SESSION_INVALID` | Refresh token không tồn tại hoặc session đã logout/admin revoke | **Dừng retry**, bắt user login lại |
+| `403` | `FORBIDDEN` | Không có quyền truy cập tài nguyên | |
+| `404` | `NOT_FOUND` | Asset / video / upload session không tồn tại | |
 | `409` | `USERNAME_TAKEN` | Register trùng username | |
 | `409` | `UPLOAD_CONFLICT` | `uploadId` đã được dùng cho metadata khác | Không tạo UUID mới khi chỉ retry cùng upload |
 | `409` | `UPLOAD_NOT_ACTIVE` | Video không còn ở `UPLOADING` | Inspect để lấy trạng thái hiện tại |
 | `409` | `UPLOAD_EXPIRED` | Upload session đã hết hạn | Khởi tạo upload mới |
 | `409` | `UPLOAD_INCOMPLETE` | Complete khi còn thiếu/sai part | Inspect rồi gửi lại `missingParts` |
+| `413` | `FILE_TOO_LARGE` | File MP4 hoặc thumbnail vượt giới hạn kích thước | Đọc `details.max_size_bytes`, không retry |
+| `422` | `INVALID_METADATA` | Metadata không hợp lệ (sai type, rỗng, không tồn tại) | Đọc `errors[].field` để sửa từng trường, không retry |
+| `422` | `BATCH_TOO_LARGE` | > 200 mutation | Chia nhỏ batch |
 | `429` | `RATE_LIMITED` | Kèm header `Retry-After` | Đọc `Retry-After` để tính lúc thử lại |
 | `500` | `UPLOAD_INITIALIZATION_FAILED` | Không tạo được workspace hoặc upload thumbnail | Retry initialization với cùng `uploadId` |
-| `500` | `INTERNAL` | | |
+| `500` | `INTERNAL` | Lỗi server không xác định | |
 
 Hiện **chưa bật rate limit**. Nếu bật sau này thì `429` sẽ luôn kèm `Retry-After`.
+
+### Chi tiết 413 FILE_TOO_LARGE
+
+```json
+{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn 200MB",
+  "details": { "max_size_bytes": 209715200, "actual_size_bytes": 500000000 } } }
+```
+
+### Chi tiết 422 INVALID_METADATA
+
+```json
+{ "error": { "code": "INVALID_METADATA", "message": "Metadata validation failed.",
+  "errors": [
+    { "field": "title", "rule": "min_length", "message": "title không được rỗng" },
+    { "field": "categoryId", "rule": "exists", "message": "categoryId=99 không tồn tại" }
+  ] } }
+```
+
+`errors[].rule` có thể là: `file_type`, `min_length`, `exists`, `readable`, `jpeg_format`, `content_type`, `min`, v.v.
 
 ---
 
@@ -649,7 +798,10 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 ## 11. Checklist tích hợp
 
 - [ ] Lưu cả `accessToken` và `refreshToken` sau login
-- [ ] Phân biệt `TOKEN_EXPIRED` (refresh) và `SESSION_REVOKED` (dừng hẳn, login lại)
+- [ ] Phân biệt **ba** `code` trên HTTP 401:
+  - `TOKEN_EXPIRED` → refresh rồi thử lại
+  - `SESSION_REVOKED_CONCURRENT_LOGIN` → **dừng hẳn**, bắt user login lại (bị đá bởi thiết bị khác)
+  - `SESSION_INVALID` → **dừng hẳn**, bắt user login lại (logout / admin / token lạ)
 - [ ] Dedup feed theo `video.id`, **không** theo `position`
 - [ ] Fetch `GET /api/categories` và lưu theo `id`; không hard-code danh sách category trong app
 - [ ] Dùng thẳng `playbackAsset.url`, không tự ghép base URL
@@ -665,3 +817,4 @@ nếu không, tiêu chí "channel xem nhiều nhất" của client sẽ không b
 - [ ] Màn hình bookmark: dùng `GET /api/users/{userId}/bookmarks` (cùng shape feed, không cần parser riêng)
 - [ ] Parser riêng cho `GET /api/reactions` (`creator`/`thumbnailUrl`/`category` khác feed)
 - [ ] Cho phép cleartext HTTP nếu test qua LAN (xem [../SERVING.md](../SERVING.md))
+- [ ] Upload validation: xử lý `413 FILE_TOO_LARGE` (không retry) và `422 INVALID_METADATA` với `errors[].field` để highlight đúng trường lỗi
