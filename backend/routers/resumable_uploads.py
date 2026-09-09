@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 import asyncpg
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Request, Response, UploadFile
+from starlette.requests import ClientDisconnect
 
 from .. import db
 from ..config import (
@@ -139,7 +140,13 @@ async def _read_thumbnail(thumbnail: UploadFile) -> bytes:
     return content
 
 
-async def _read_part(request: Request, expected_size: int) -> bytes:
+async def _read_part(request: Request, expected_size: int) -> bytes | None:
+    """
+    Đọc body thành bytes.
+
+    Trả ``None`` nếu client ngắt kết nối giữa chừng (``ClientDisconnect``) — caller
+    sẽ xử lý bằng cách trả 499 Client Closed Request thay vì để exception lan ra ngoài.
+    """
     content_length = request.headers.get("content-length")
     if content_length is not None:
         try:
@@ -154,14 +161,19 @@ async def _read_part(request: Request, expected_size: int) -> bytes:
             )
 
     content = bytearray()
-    async for chunk in request.stream():
-        if len(chunk) > expected_size - len(content):
-            raise ApiError(
-                400,
-                "INVALID_PART_SIZE",
-                f"Part vượt quá kích thước expected={expected_size}",
-            )
-        content.extend(chunk)
+    try:
+        async for chunk in request.stream():
+            if len(chunk) > expected_size - len(content):
+                raise ApiError(
+                    400,
+                    "INVALID_PART_SIZE",
+                    f"Part vượt quá kích thước expected={expected_size}",
+                )
+            content.extend(chunk)
+    except ClientDisconnect:
+        # Client ngắt kết nối (mất mạng, tắt app, timeout proxy…) — không crash server.
+        return None
+
     if len(content) != expected_size:
         raise ApiError(
             400,
@@ -330,6 +342,9 @@ async def upload_part(
         raise ApiError(400, "INVALID_REQUEST", str(error)) from error
 
     content = await _read_part(request, expected_size)
+    if content is None:
+        # Client ngắt kết nối — trả 499 Client Closed Request. Không crash server.
+        return Response(status_code=499)
     await upload_storage.write_part(upload_id, part_number, expected_size, content)
     return Response(status_code=204)
 
