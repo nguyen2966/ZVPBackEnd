@@ -59,13 +59,17 @@ async def login(body: LoginRequest):
         async with conn.transaction():
             # Thứ tự bắt buộc (SPEC 3.2): revoke session cũ TRƯỚC rồi mới insert session mới,
             # nếu không partial unique index sessions_one_active_per_user sẽ chặn (bất biến 8).
+            # Ghi luôn device_id mới vào replaced_by_device để refresh endpoint phân biệt được
+            # đây là CONCURRENT_LOGIN (đỡ thanh phiên) hay LOGOUT/ADMIN.
             await conn.execute(
                 """
                 update sessions
-                   set revoked_at = now(), revoked_reason = 'NEW_LOGIN'
+                   set revoked_at = now(),
+                       revoked_reason = 'CONCURRENT_LOGIN',
+                       replaced_by_device = $2
                  where user_id = $1 and revoked_at is null
                 """,
-                user["id"],
+                user["id"], body.deviceId,
             )
             session = await conn.fetchrow(
                 """
@@ -88,18 +92,25 @@ async def login(body: LoginRequest):
 async def refresh(body: RefreshRequest):
     row = await db.pool().fetchrow(
         """
-        select id, user_id, revoked_at
+        select id, user_id, revoked_at, revoked_reason, replaced_by_device
           from sessions
          where refresh_token_hash = $1
         """,
         hash_refresh_token(body.refreshToken),
     )
     if row is None:
-        raise ApiError(401, "SESSION_REVOKED", "Unknown refresh token")
+        # Token không tồn tại trong DB — chưa bao giờ sinh ra hoặc đã bị xoá.
+        raise ApiError(401, "SESSION_INVALID", "Invalid or ended session.")
+
     if row["revoked_at"] is not None:
-        # SPEC 3.3: session đã revoke -> phải là SESSION_REVOKED, không phải TOKEN_EXPIRED,
-        # để client dừng hẳn vòng retry và bắt user đăng nhập lại.
-        raise ApiError(401, "SESSION_REVOKED", "Signed in on another device")
+        if row["revoked_reason"] == "CONCURRENT_LOGIN":
+            # Thiết bị khác đã đăng nhập, phiên này bị đá.
+            raise ApiError(
+                401, "SESSION_REVOKED_CONCURRENT_LOGIN",
+                "Your account has been logged in on another device.",
+            )
+        # LOGOUT hoặc ADMIN revoke — hết phiên, không phải bị đá.
+        raise ApiError(401, "SESSION_INVALID", "Invalid or ended session.")
 
     return {
         "accessToken": create_access_token(row["user_id"], row["id"]),

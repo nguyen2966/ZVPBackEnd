@@ -91,3 +91,7 @@ py -3.12 vndata_s3.py verify VIDEO_ID
 
 Dùng `--force` với lệnh upload chỉ khi muốn ghi lại object cùng key. Mặc định object có cùng
 kích thước và metadata sẽ được bỏ qua.
+
+
+
+cloudflared tunnel run --protocol http2 --proxy-keepalive-timeout 60s --url http://localhost:3000 my-backend

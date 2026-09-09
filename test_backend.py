@@ -426,8 +426,8 @@ def main() -> int:
 
     r = client.get("/api/feed", headers=auth_a)   # token cũ của devA
     check("token devA giờ trả 401", r.status_code == 401, r.text)
-    check("code = SESSION_REVOKED (không phải TOKEN_EXPIRED)",
-          r.json()["error"]["code"] == "SESSION_REVOKED", r.text)
+    check("code = SESSION_REVOKED_CONCURRENT_LOGIN (không phải TOKEN_EXPIRED)",
+          r.json()["error"]["code"] == "SESSION_REVOKED_CONCURRENT_LOGIN", r.text)
     check("shape lỗi đúng {error:{code,message}}",
           set(r.json()["error"]) >= {"code", "message"}, r.text)
 
@@ -435,8 +435,32 @@ def main() -> int:
           client.get("/api/feed", headers={"authorization": f"Bearer {token_b}"}).status_code == 200)
 
     r = client.post("/api/auth/refresh", json={"refreshToken": refresh_a})
-    check("refresh của session đã revoke -> 401", r.status_code == 401)
-    check("code = SESSION_REVOKED", r.json()["error"]["code"] == "SESSION_REVOKED", r.text)
+    check("refresh của session bị CONCURRENT_LOGIN -> 401", r.status_code == 401)
+    check("code = SESSION_REVOKED_CONCURRENT_LOGIN",
+          r.json()["error"]["code"] == "SESSION_REVOKED_CONCURRENT_LOGIN", r.text)
+
+    # --- SESSION_INVALID: token không tồn tại hoặc revoked vì LOGOUT ---
+    r = client.post("/api/auth/refresh", json={"refreshToken": "this.is.not.a.valid.token"})
+    check("refresh token lạ -> 401 SESSION_INVALID", r.status_code == 401, r.text)
+    check("code = SESSION_INVALID", r.json()["error"]["code"] == "SESSION_INVALID", r.text)
+
+    # login devC để revoke devB
+    r = client.post("/api/auth/login",
+                    json={"username": USERNAME, "password": PASSWORD, "deviceId": "devC"})
+    token_c = r.json()["accessToken"]
+    refresh_c = r.json()["refreshToken"]
+
+    # login devD để revoke devC; giữ lại token để dùng ở section 15 (asset thật)
+    r = client.post("/api/auth/login",
+                    json={"username": USERNAME, "password": PASSWORD, "deviceId": "devD"})
+    valid_token = r.json()["accessToken"]   # token mới nhất, chưa bị revoke
+
+    r2 = client.get("/api/feed", headers={"authorization": f"Bearer {token_c}"})
+    check("token devC sau khi devD login -> SESSION_REVOKED_CONCURRENT_LOGIN",
+          r2.json()["error"]["code"] == "SESSION_REVOKED_CONCURRENT_LOGIN", r2.text)
+    r3 = client.post("/api/auth/refresh", json={"refreshToken": refresh_c})
+    check("refresh devC sau khi devD login -> SESSION_REVOKED_CONCURRENT_LOGIN",
+          r3.json()["error"]["code"] == "SESSION_REVOKED_CONCURRENT_LOGIN", r3.text)
 
     # ---------------------------------------------------------------- register
     section("14. POST /api/auth/register")
@@ -453,8 +477,8 @@ def main() -> int:
 
     # ---------------------------------------------------------------- asset thật
     section("15. playbackAsset.url phục vụ được HLS thật")
-    token_b_hdr = {"authorization": f"Bearer {token_b}"}
-    item = client.get("/api/feed", headers=token_b_hdr).json()["items"][0]["video"]
+    valid_token_hdr = {"authorization": f"Bearer {valid_token}"}
+    item = client.get("/api/feed", headers=valid_token_hdr).json()["items"][0]["video"]
     master_url = item["playbackAsset"]["url"]
     r = client.get(master_url)
     check("master playlist trả 200", r.status_code == 200, master_url)

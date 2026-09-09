@@ -38,7 +38,8 @@ create table sessions (
   created_at         timestamptz not null default now(),
   last_seen_at       timestamptz not null default now(),
   revoked_at         timestamptz,
-  revoked_reason     text                  -- 'NEW_LOGIN' | 'LOGOUT' | 'ADMIN'
+  revoked_reason     text,                -- 'CONCURRENT_LOGIN' | 'LOGOUT' | 'ADMIN'
+  replaced_by_device text                 -- tên thiết bị thay thế (khi reason = 'CONCURRENT_LOGIN')
 );
 
 -- Bất biến 8, do database ép: không code path nào tạo được session active thứ hai.

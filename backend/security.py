@@ -87,18 +87,35 @@ async def current_principal(request: Request) -> Principal:
         raise ApiError(401, "TOKEN_EXPIRED", "Malformed access token")
 
     # Kiểm tra session + chạm last_seen_at trong đúng một round trip.
+    # Dùng CTE để vừa update last_seen_at vừa lấy revoked_reason trong một query.
     row = await db.pool().fetchrow(
         """
-        update sessions
-           set last_seen_at = now()
-         where id = $1 and user_id = $2 and revoked_at is null
-        returning id
+        with updated as (
+            update sessions
+               set last_seen_at = now()
+             where id = $1 and user_id = $2 and revoked_at is null
+            returning id
+        )
+        select u.id, s.revoked_reason
+          from updated u
+          join sessions s on s.id = u.id
         """,
         session_id, user_id,
     )
     if row is None:
-        # Session không còn active -> đã bị revoke bởi lần login khác (bất biến 8).
-        raise ApiError(401, "SESSION_REVOKED", "Signed in on another device")
+        # Session không còn active — kiểm tra lý do revoke để phân biệt.
+        row = await db.pool().fetchrow(
+            "select revoked_reason from sessions where id = $1 and user_id = $2",
+            session_id, user_id,
+        )
+        if row is None:
+            raise ApiError(401, "SESSION_INVALID", "Invalid or ended session.")
+        if row["revoked_reason"] == "CONCURRENT_LOGIN":
+            raise ApiError(
+                401, "SESSION_REVOKED_CONCURRENT_LOGIN",
+                "Your account has been logged in on another device.",
+            )
+        raise ApiError(401, "SESSION_INVALID", "Invalid or ended session.")
 
     return Principal(user_id=user_id, session_id=session_id)
 
