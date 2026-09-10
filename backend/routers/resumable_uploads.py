@@ -25,7 +25,9 @@ from ..config import (
 )
 from ..errors import ApiError
 from ..security import Principal, current_principal
+from ..serializers import feed_video
 from ..upload_storage import UploadStorage
+from ..urls import request_base_url
 from ..video_processing import process_resumable_video
 
 router = APIRouter(prefix="/api/video-uploads", tags=["upload"])
@@ -33,9 +35,15 @@ upload_storage = UploadStorage(UPLOAD_STORAGE_DIR)
 
 _SESSION_SQL = """
 select s.id, s.video_id, s.file_size, s.part_size, s.expires_at,
-       v.creator_id, v.category_id, v.title, v.caption, v.status
+       v.creator_id, v.category_id, v.title, v.caption, v.status,
+       v.duration_ms, v.playback_url, v.thumbnail_url,
+       v.like_count, v.dislike_count, v.bookmark_count,
+       c.name as category_name,
+       u.display_name, u.username, u.avatar_url
   from video_upload_sessions s
   join videos v on v.id = s.video_id
+  join users u on u.id = v.creator_id
+  left join categories c on c.id = v.category_id
  where s.id = $1
 """
 
@@ -76,6 +84,14 @@ def _session_response(row, uploaded_parts: list[int] | None = None) -> dict:
             for number in range(1, total_parts + 1)
             if number not in accepted_set
         ]
+    return response
+
+
+def _initialization_response(row, base_url: str) -> dict:
+    response = _session_response(row)
+    video_row = dict(row)
+    video_row["id"] = row["video_id"]
+    response["video"] = feed_video(video_row, {}, base_url)
     return response
 
 
@@ -185,6 +201,7 @@ async def _read_part(request: Request, expected_size: int) -> bytes | None:
 
 @router.post("", status_code=201)
 async def initialize_upload(
+    request: Request,
     response: Response,
     uploadId: uuid.UUID = Form(...),
     title: str = Form(...),
@@ -229,7 +246,7 @@ async def initialize_upload(
         ):
             raise ApiError(409, "UPLOAD_CONFLICT", "uploadId đã được dùng cho nội dung khác")
         response.status_code = 200
-        return _session_response(existing)
+        return _initialization_response(existing, request_base_url(request))
 
     category_exists = await db.pool().fetchval(
         "select exists(select 1 from categories where id = $1)",
@@ -261,7 +278,7 @@ async def initialize_upload(
                         id, creator_id, category_id, title, caption, duration_ms,
                         playback_url, thumbnail_url, status
                     )
-                    values ($1, $2, $3, $4, $5, 0, $6, $7, 'UPLOADING')
+                    values ($1, $2, $3, $4, $5, 0, $6, null, 'UPLOADING')
                     """,
                     video_id,
                     principal.user_id,
@@ -269,7 +286,6 @@ async def initialize_upload(
                     normalized_title,
                     normalized_caption,
                     urls["hls_url"],
-                    urls["thumbnail_url"],
                 )
                 await connection.execute(
                     """
@@ -297,13 +313,23 @@ async def initialize_upload(
         ):
             raise ApiError(409, "UPLOAD_CONFLICT", "uploadId đã được dùng cho nội dung khác")
         response.status_code = 200
-        return _session_response(existing)
+        return _initialization_response(existing, request_base_url(request))
 
     try:
         await upload_storage.create_workspace(uploadId)
         from vndata_s3 import upload_thumbnail
 
         await asyncio.to_thread(upload_thumbnail, video_id, thumbnail_content)
+        await db.pool().execute(
+            """
+            update videos
+               set thumbnail_url = $2
+             where id = $1 and creator_id = $3 and status = 'UPLOADING'
+            """,
+            video_id,
+            urls["thumbnail_url"],
+            principal.user_id,
+        )
     except Exception as error:
         await db.pool().execute(
             "delete from videos where id = $1 and creator_id = $2 and status = 'UPLOADING'",
@@ -315,7 +341,7 @@ async def initialize_upload(
 
     created = await db.pool().fetchrow(_SESSION_SQL, uploadId)
     response.status_code = 201
-    return _session_response(created)
+    return _initialization_response(created, request_base_url(request))
 
 
 @router.put("/{upload_id}/parts/{part_number}", status_code=204)

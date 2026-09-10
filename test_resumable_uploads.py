@@ -12,6 +12,7 @@ from starlette.requests import Request
 from backend.errors import ApiError
 from backend.routers.resumable_uploads import (
     _expected_part_size,
+    _initialization_response,
     _read_part,
     _read_thumbnail,
     _total_parts,
@@ -35,6 +36,37 @@ class ResumableUploadTests(unittest.TestCase):
             _expected_part_size(20 * MIB, 8 * MIB, 0)
         with self.assertRaises(ValueError):
             _expected_part_size(20 * MIB, 8 * MIB, 4)
+
+    def test_initialization_returns_session_and_video(self) -> None:
+        row = {
+            "id": "58bb0a14-a26b-4c9f-bae4-645e509eef3f",
+            "video_id": "up_123",
+            "status": "UPLOADING",
+            "part_size": 8 * MIB,
+            "title": "Video",
+            "caption": "",
+            "duration_ms": 0,
+            "playback_url": "https://cdn.example/hls/up_123/master.m3u8",
+            "thumbnail_url": "https://cdn.example/thumbnails/up_123.jpg",
+            "like_count": 0,
+            "dislike_count": 0,
+            "bookmark_count": 0,
+            "creator_id": "creator-1",
+            "display_name": "Creator",
+            "username": "creator",
+            "avatar_url": None,
+            "category_name": "Music",
+        }
+
+        response = _initialization_response(row, "https://api.example")
+
+        self.assertEqual(response["uploadId"], row["id"])
+        self.assertEqual(response["videoId"], row["video_id"])
+        self.assertEqual(response["video"]["id"], row["video_id"])
+        self.assertEqual(
+            response["video"]["thumbnailAsset"]["url"],
+            row["thumbnail_url"],
+        )
 
 
 class PartBodyTests(unittest.IsolatedAsyncioTestCase):

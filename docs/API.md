@@ -314,6 +314,9 @@ MP4**.
 | `thumbnail` | JPEG | Tối đa 2 MiB |
 
 Backend tạo video ở trạng thái `UPLOADING`, upload thumbnail lên VNData và tạo workspace tạm.
+Trong cửa sổ khởi tạo, My Videos có thể thấy video với `thumbnailAsset.url = null`; client tiếp tục
+dùng thumbnail local. Backend chỉ lưu URL thumbnail vào video sau khi object đã upload thành công,
+rồi mới trả response khởi tạo.
 
 ```json
 // 201 Created
@@ -321,11 +324,35 @@ Backend tạo video ở trạng thái `UPLOADING`, upload thumbnail lên VNData 
   "uploadId": "1d41ea51-9a6a-48c1-8b8d-1b3c318cb491",
   "videoId": "up_a1b2c3d4e5f",
   "status": "UPLOADING",
-  "partSize": 8388608
+  "partSize": 8388608,
+  "video": {
+    "id": "up_a1b2c3d4e5f",
+    "user": {
+      "id": "...",
+      "displayName": "...",
+      "username": "...",
+      "avatarUrl": null
+    },
+    "category": { "name": "Music" },
+    "title": "Video title",
+    "caption": "",
+    "durationMs": 0,
+    "playbackAsset": { "url": "https://.../master.m3u8" },
+    "thumbnailAsset": { "url": "https://.../up_a1b2c3d4e5f.jpg" },
+    "engagement": {
+      "likeCount": 0,
+      "dislikeCount": 0,
+      "bookmarkCount": 0
+    },
+    "viewerState": { "isBookmarked": false, "reaction": null }
+  }
 }
 ```
 
-Gửi lại đúng `uploadId` và cùng metadata là idempotent: backend trả `200` với cùng `videoId`.
+`video` dùng cùng shape với item trong My Videos để client thay nội dung local card ngay sau khi
+khởi tạo mà không fetch lại toàn bộ danh sách. Thumbnail đã được upload trước khi response này được
+trả về. Gửi lại đúng `uploadId` và cùng metadata là idempotent: backend trả `200` với cùng
+`videoId` và `video`.
 Nếu UUID đã được dùng cho nội dung khác, backend trả `409 UPLOAD_CONFLICT`.
 
 ### 4d.2 `PUT /api/video-uploads/{uploadId}/parts/{partNumber}`

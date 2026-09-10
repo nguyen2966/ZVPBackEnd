@@ -455,6 +455,8 @@ Cần auth. Client mới dùng bốn endpoint sau thay cho việc gửi toàn b�
 
 `uploadId` do client sinh và giữ ổn định. Khởi tạo lại cùng UUID + metadata hoặc gửi lại cùng part
 phải an toàn. Backend trả `partSize`; client không tự quyết định kích thước part.
+Response khởi tạo trả thêm `video` theo cùng shape với My Videos sau khi thumbnail đã được upload,
+để client cập nhật đúng một pending card mà không fetch lại cả danh sách.
 
 
 State machine:
