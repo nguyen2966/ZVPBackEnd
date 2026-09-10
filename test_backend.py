@@ -372,10 +372,8 @@ def main() -> int:
     check("position 0-based liên tục",
           [i["position"] for i in mine] == list(range(len(mine))))
     check("mỗi item có status", all("status" in i for i in mine), json.dumps(mine[:1]))
-    check("mỗi item có uploadId",
-          all("uploadId" in i for i in mine), json.dumps(mine[:1]))
     check("uploadId chỉ có ở video UPLOADING",
-          all((i["status"] == "UPLOADING") == (i["uploadId"] is not None)
+          all((i["status"] == "UPLOADING") == ("uploadId" in i)
               for i in mine), json.dumps(mine[:1]))
     if mine:
         check("shape video KHỚP /api/feed",
@@ -392,7 +390,7 @@ def main() -> int:
           all(i["status"] == "READY" for i in r.json()["items"]),
           str({i["status"] for i in r.json()["items"]}))
     check("không lộ uploadId của người khác",
-          all(i["uploadId"] is None for i in r.json()["items"]), r.text)
+          all("uploadId" not in i for i in r.json()["items"]), r.text)
 
     check("thiếu token -> 401", client.get(f"/api/users/{me}/videos").status_code == 401)
     check("userId sai định dạng -> 422 (metadata validation)",

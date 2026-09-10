@@ -231,23 +231,22 @@ async def list_user_videos(
                 state["reaction"] = r["type"]
 
     base = request_base_url(request)
-    return {
-        "items": [
-            {
-                "position": i,
-                "status": row["status"],
-                "uploadId": (
-                    str(row["upload_id"])
-                    if is_self
-                    and row["status"] == "UPLOADING"
-                    and row["upload_id"] is not None
-                    else None
-                ),
-                "video": feed_video(row, viewer[row["id"]], base),
-            }
-            for i, row in enumerate(rows)
-        ]
-    }
+    items = []
+    for position, row in enumerate(rows):
+        item = {
+            "position": position,
+            "status": row["status"],
+            "video": feed_video(row, viewer[row["id"]], base),
+        }
+        if (
+            is_self
+            and row["status"] == "UPLOADING"
+            and row["upload_id"] is not None
+        ):
+            item["uploadId"] = str(row["upload_id"])
+        items.append(item)
+
+    return {"items": items}
 
 
 @router.get("/videos/{video_id}")

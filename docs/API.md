@@ -463,7 +463,7 @@ Cần auth. Danh sách video user đó đã upload, cùng shape với `/api/feed
 |---|---|
 | Thứ tự | Mới upload nhất lên đầu (`created_at desc`) |
 | `status` | `UPLOADING` · `PROCESSING` · `READY` · `FAILED` |
-| `uploadId` | UUID khi chính chủ có thể resume video `UPLOADING`; `null` ở trạng thái khác |
+| `uploadId` | Chỉ có ở video `UPLOADING` của chính chủ; UUID dùng để resume |
 | Ai thấy gì | Mọi người đều thấy `READY`; `UPLOADING`/`PROCESSING`/`FAILED` **chỉ** chính chủ thấy |
 
 | Trường hợp | Kết quả |

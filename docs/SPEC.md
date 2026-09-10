@@ -473,8 +473,8 @@ recovery chưa thuộc phạm vi.
 
 Với chính chủ, mỗi item `UPLOADING` trong `GET /api/users/{userId}/videos` trả thêm `uploadId`.
 Client dùng ID này để nối video đã lưu trong Application Support với session backend và chỉ gửi
-lại `missingParts` sau khi app khởi động lại. Các trạng thái khác và người xem khác nhận
-`uploadId: null`.
+lại `missingParts` sau khi app khởi động lại. Backend không trả trường này cho các trạng thái khác
+hoặc người xem khác.
 
 
 Hợp đồng request/response và lỗi chi tiết nằm trong [API.md](API.md#4d-resumable-video-upload).
