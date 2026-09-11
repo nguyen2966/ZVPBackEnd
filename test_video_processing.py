@@ -10,7 +10,18 @@ from uuid import uuid4
 
 import convert_v2
 import vndata_s3
-from backend.video_processing import process_resumable_video
+from backend.video_processing import probe_duration_ms, process_resumable_video
+
+
+
+class DurationExtractionTests(unittest.TestCase):
+    def test_long_video_needs_no_bitrate_frame_rate_or_resolution_metadata(self) -> None:
+        result = MagicMock(
+            returncode=0,
+            stdout='{"streams": [{"codec_type": "video"}], "format": {"duration": "600"}}',
+        )
+        with patch("backend.video_processing.subprocess.run", return_value=result):
+            self.assertEqual(probe_duration_ms(Path("original.mp4")), 600_000)
 
 
 class FakePool:
@@ -36,7 +47,7 @@ class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
 
         with (
             patch("backend.video_processing.db.pool", return_value=pool),
-            patch("backend.video_processing.probe_duration_ms", return_value=12_345),
+            patch("backend.video_processing.probe_duration_ms", return_value=600_000),
             patch("convert_v2.convert_one", return_value=(True, "converted")) as convert,
             patch("vndata_s3.upload_hls_assets") as upload_hls,
             patch("vndata_s3.verify_video") as verify,
@@ -57,7 +68,7 @@ class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
         upload_hls.assert_called_once_with("up_video")
         verify.assert_called_once_with("up_video")
         self.assertIn("status = 'READY'", pool.executions[0][0])
-        self.assertEqual(pool.executions[0][1], ("up_video", 12_345))
+        self.assertEqual(pool.executions[0][1], ("up_video", 600_000))
         remove_workspace.assert_awaited_once_with(upload_id)
         remove_assets.assert_called_once_with("up_video")
 
@@ -90,7 +101,7 @@ class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
 
         with (
             patch("backend.video_processing.db.pool", return_value=pool),
-            patch("backend.video_processing.probe_duration_ms", return_value=12_345),
+            patch("backend.video_processing.probe_duration_ms", return_value=600_000),
             patch("convert_v2.convert_one", return_value=(True, "converted")),
             patch("vndata_s3.upload_hls_assets"),
             patch("vndata_s3.verify_video"),

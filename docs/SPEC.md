@@ -659,9 +659,11 @@ Server lắp `payload` từ các row `app_config_entries` của bundle đang b�
 Đây là cơ chế để đổi trọng số/A-B mà không cần release app, nên `version` phải tăng mỗi lần đổi
 các entry, và mỗi lần đổi chỉ nên bật một bundle.
 
-`upload.*` is shared policy: the client uses it for capture and early validation, while upload
-endpoints load the enabled database bundle and enforce the same values. Resolution is compared
-by short and long edge, so both 720x1280 and 1280x720 are accepted.
+`upload.*` supplies client selection and camera settings. Backend upload endpoints enforce
+only `upload.maxFileSizeBytes` from the enabled database bundle; they do not enforce duration,
+bitrate, frame rate, or resolution limits. Metadata validation remains in upload requests: the file must contain a readable video stream
+and a positive duration. There is no maximum-duration check. Invalid media returns
+`422 INVALID_METADATA`; valid duration is stored as video metadata.
 
 
 Seed:

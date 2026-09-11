@@ -387,7 +387,9 @@ vì workspace không còn là nguồn trạng thái cần thiết.
 
 ### 4d.4 `POST /api/video-uploads/{uploadId}/complete`
 
-Backend kiểm tra đủ part, ghép thành `original.mp4`, chuyển video sang `PROCESSING` và trả:
+Backend kiểm tra đủ part, ghép thành `original.mp4` và kiểm tra metadata đọc được bằng
+`ffprobe`. Video không hợp lệ trả `422 INVALID_METADATA`; video hợp lệ chuyển sang
+`PROCESSING` và trả:
 
 ```json
 // 202 Accepted
@@ -401,7 +403,7 @@ Backend kiểm tra đủ part, ghép thành `original.mp4`, chuyển video sang 
 
 Sau khi HTTP response kết thúc, backend lần lượt:
 
-1. kiểm tra video bằng `ffprobe`;
+1. dùng duration đã đọc khi kiểm tra metadata;
 2. convert MP4 thành HLS multivariant;
 3. upload và verify HLS trên VNData;
 4. cập nhật `durationMs` và status thành `READY`, hoặc `FAILED` nếu xử lý lỗi;
@@ -728,8 +730,9 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
 - `ETag` hiện tại: `W/"config-v1"`, derive từ `version`. Gửi lại qua `If-None-Match` → `304`.
 - **Không bao giờ trả `404`.** Chưa có bundle nào bật thì trả `payload: {}` với `version = 0`.
   Client dùng default compile-in cho các key bị thiếu.
-- Upload endpoints read `upload.*` from the enabled database bundle. Updating these entries
-  advances the version through the database trigger, so clients refresh the same limits.
+- Upload endpoints enforce only `upload.maxFileSizeBytes` from the enabled database bundle.
+  Duration, bitrate, frame rate, and resolution settings are used by the client, not as backend
+  upload limits. Updating config entries advances the version so clients refresh their settings.
 - `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client**.
 
 ---
