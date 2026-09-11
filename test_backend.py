@@ -407,16 +407,8 @@ def main() -> int:
     cfg = r.json()
     check("có version", isinstance(cfg.get("version"), int))
     check("có ttlSeconds", isinstance(cfg.get("ttlSeconds"), int))
-    check("payload có đủ 5 nhóm key",
-          {"feed", "ranking", "sync", "cache", "upload"} <= set(cfg.get("payload", {})), json.dumps(cfg)[:200])
-    check("upload config đúng giới hạn",
-          cfg["payload"]["upload"] == {
-              "maxFileSizeBytes": 500 * 1024 * 1024,
-              "maxVideoBitRate": 6_000_000,
-              "maxDurationSeconds": 300,
-              "maxFramesPerSecond": 30,
-              "maxResolution": {"width": 720, "height": 1280},
-          }, json.dumps(cfg["payload"].get("upload"), ensure_ascii=False))
+    check("payload có đủ 4 nhóm key",
+          {"feed", "ranking", "sync", "cache"} <= set(cfg.get("payload", {})), json.dumps(cfg)[:200])
     check("ranking.weights có mặt", "weights" in cfg["payload"]["ranking"])
     ranking = cfg["payload"]["ranking"]
     check("ranking.enabled dùng positiveChannel/positiveCategory",

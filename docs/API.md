@@ -66,7 +66,7 @@ Một số lỗi có thêm `details` hoặc `errors` để client xử lý tự 
 
 ```json
 // 413 FILE_TOO_LARGE
-{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn upload", "details": { "max_size_bytes": 524288000, "actual_size_bytes": 600000000 } } }
+{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn 500MB", "details": { "max_size_bytes": 524288000, "actual_size_bytes": 600000000 } } }
 
 // 422 INVALID_METADATA
 { "error": { "code": "INVALID_METADATA", "message": "Metadata validation failed.", "errors": [{ "field": "title", "rule": "min_length", "message": "title không được rỗng" }] } }
@@ -310,7 +310,7 @@ MP4**.
 | `title` | String | Bắt buộc, không được rỗng sau khi trim |
 | `caption` | String | Tuỳ chọn, mặc định `""` |
 | `categoryId` | Int | Phải tồn tại trong database |
-| `fileSize` | Int64 | Dung lượng MP4 theo byte, tối đa theo `upload.maxFileSizeBytes` của config đang bật |
+| `fileSize` | Int64 | Dung lượng MP4 theo byte, tối đa theo `upload.maxFileSizeBytes` trong config DB đang bật |
 | `thumbnail` | JPEG | Tối đa 2 MiB |
 
 Backend tạo video ở trạng thái `UPLOADING`, upload thumbnail lên VNData và tạo workspace tạm.
@@ -463,7 +463,7 @@ Client gọi `GET /api/videos/{videoId}` để theo dõi. Video chỉ vào feed 
 | HTTP | `code` | Khi nào |
 |---|---|---|
 | `401` | `TOKEN_EXPIRED` | Thiếu/hết/hỏng token |
-| `413` | `FILE_TOO_LARGE` | File vượt quá `upload.maxFileSizeBytes` của config đang bật |
+| `413` | `FILE_TOO_LARGE` | File vượt quá 500MB |
 | `422` | `INVALID_METADATA` | File không phải `.mp4`, title rỗng, `categoryId` không tồn tại, ffprobe không đọc được |
 | `404` | `NOT_FOUND` | Video không tồn tại (chỉ dùng cho `GET /api/videos/{id}`) |
 
@@ -713,14 +713,7 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
     },
     "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
     "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
-               "sessionTtlDays": 90, "maxSessions": 5000 },
-    "upload": {
-      "maxFileSizeBytes": 524288000,
-      "maxVideoBitRate": 6000000,
-      "maxDurationSeconds": 300,
-      "maxFramesPerSecond": 30,
-      "maxResolution": { "width": 720, "height": 1280 }
-    }
+               "sessionTtlDays": 90, "maxSessions": 5000 }
   }
 }
 ```
@@ -728,8 +721,8 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
 - `ETag` hiện tại: `W/"config-v1"`, derive từ `version`. Gửi lại qua `If-None-Match` → `304`.
 - **Không bao giờ trả `404`.** Chưa có bundle nào bật thì trả `payload: {}` với `version = 0`.
   Client dùng default compile-in cho các key bị thiếu.
-- Upload endpoints read `upload.*` from the enabled database bundle. Updating these entries
-  advances the version through the database trigger, so clients refresh the same limits.
+- `payload` là opaque với server — đổi trọng số ranking không cần release app, chỉ cần tăng
+  `version` và bật bundle mới.
 - `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client**.
 
 ---
@@ -812,7 +805,7 @@ Hiện **chưa bật rate limit**. Nếu bật sau này thì `429` sẽ luôn k�
 ### Chi tiết 413 FILE_TOO_LARGE
 
 ```json
-{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn upload",
+{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn 500MB",
   "details": { "max_size_bytes": 524288000, "actual_size_bytes": 600000000 } } }
 ```
 

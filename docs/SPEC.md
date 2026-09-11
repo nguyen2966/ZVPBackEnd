@@ -643,14 +643,7 @@ Server lắp `payload` từ các row `app_config_entries` của bundle đang b�
  },
  "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
  "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
-            "sessionTtlDays": 90, "maxSessions": 5000 },
- "upload": {
-   "maxFileSizeBytes": 524288000,
-   "maxVideoBitRate": 6000000,
-   "maxDurationSeconds": 300,
-   "maxFramesPerSecond": 30,
-   "maxResolution": { "width": 720, "height": 1280 }
- }
+            "sessionTtlDays": 90, "maxSessions": 5000 }
 }
 ```
 
@@ -658,10 +651,6 @@ Server lắp `payload` từ các row `app_config_entries` của bundle đang b�
 `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client** — server chỉ chứa và phát chúng.
 Đây là cơ chế để đổi trọng số/A-B mà không cần release app, nên `version` phải tăng mỗi lần đổi
 các entry, và mỗi lần đổi chỉ nên bật một bundle.
-
-`upload.*` is shared policy: the client uses it for capture and early validation, while upload
-endpoints load the enabled database bundle and enforce the same values. Resolution is compared
-by short and long edge, so both 720x1280 and 1280x720 are accepted.
 
 
 Seed:

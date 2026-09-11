@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import subprocess
 from pathlib import Path
 from uuid import UUID
 
@@ -10,7 +12,6 @@ from . import db
 from .config import UPLOAD_STORAGE_DIR
 from .upload_storage import UploadStorage
 from .video_deletion import remove_local_video_assets
-from .video_metadata import probe_video_metadata
 
 upload_storage = UploadStorage(UPLOAD_STORAGE_DIR)
 _processing_lock = asyncio.Lock()
@@ -18,8 +19,34 @@ _processing_lock = asyncio.Lock()
 
 def probe_duration_ms(source: Path) -> int:
     """Trả duration milliseconds, hoặc 0 nếu source không có video stream hợp lệ."""
-    metadata = probe_video_metadata(source)
-    return metadata.duration_ms if metadata else 0
+    process = subprocess.run(
+        [
+            "ffprobe",
+            "-v", "error",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=codec_type",
+            "-show_entries", "format=duration",
+            "-of", "json",
+            str(source),
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if process.returncode != 0:
+        return 0
+    try:
+        data = json.loads(process.stdout)
+        has_video = any(
+            stream.get("codec_type") == "video"
+            for stream in data.get("streams", [])
+        )
+        if not has_video:
+            return 0
+        return int(float(data["format"]["duration"]) * 1000)
+    except (KeyError, TypeError, ValueError):
+        return 0
 
 
 async def remove_published_assets_if_video_missing(video_id: str) -> None:
@@ -37,13 +64,11 @@ async def process_resumable_video(
     upload_id: UUID,
     video_id: str,
     source: Path,
-    duration_ms: int | None = None,
 ) -> None:
     """Chạy sau HTTP 202; chỉ một resumable video được convert/upload tại một thời điểm."""
     async with _processing_lock:
         try:
-            if duration_ms is None:
-                duration_ms = await asyncio.to_thread(probe_duration_ms, source)
+            duration_ms = await asyncio.to_thread(probe_duration_ms, source)
             if duration_ms <= 0:
                 raise RuntimeError("File MP4 không có video stream hợp lệ")
 
