@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import shutil
 import subprocess
 from pathlib import Path
 from uuid import UUID
@@ -12,6 +11,7 @@ from uuid import UUID
 from . import db
 from .config import UPLOAD_STORAGE_DIR
 from .upload_storage import UploadStorage
+from .video_deletion import remove_local_video_assets
 
 upload_storage = UploadStorage(UPLOAD_STORAGE_DIR)
 _processing_lock = asyncio.Lock()
@@ -49,11 +49,15 @@ def probe_duration_ms(source: Path) -> int:
         return 0
 
 
-def _remove_generated_assets(video_id: str) -> None:
-    from convert_v2 import HLS_DIR, THUMB_DIR
+async def remove_published_assets_if_video_missing(video_id: str) -> None:
+    exists = await db.pool().fetchval(
+        "select exists(select 1 from videos where id = $1)",
+        video_id,
+    )
+    if not exists:
+        from vndata_s3 import delete_video_assets
 
-    shutil.rmtree(HLS_DIR / video_id, ignore_errors=True)
-    (THUMB_DIR / f"{video_id}.jpg").unlink(missing_ok=True)
+        await asyncio.to_thread(delete_video_assets, video_id)
 
 
 async def process_resumable_video(
@@ -85,7 +89,7 @@ async def process_resumable_video(
             await asyncio.to_thread(upload_hls_assets, video_id)
             await asyncio.to_thread(verify_video, video_id)
 
-            await db.pool().execute(
+            updated = await db.pool().execute(
                 """
                 update videos
                    set status = 'READY', duration_ms = $2
@@ -94,7 +98,8 @@ async def process_resumable_video(
                 video_id,
                 duration_ms,
             )
-            print(f"[resumable-upload] {video_id} READY: durationMs={duration_ms}")
+            if updated == "UPDATE 1":
+                print(f"[resumable-upload] {video_id} READY: durationMs={duration_ms}")
         except Exception as error:  # mọi lỗi kết thúc rõ ràng bằng FAILED
             await db.pool().execute(
                 "update videos set status = 'FAILED' where id = $1 and status = 'PROCESSING'",
@@ -103,4 +108,5 @@ async def process_resumable_video(
             print(f"[resumable-upload] {video_id} FAILED: {error}")
         finally:
             await upload_storage.remove_workspace(upload_id)
-            await asyncio.to_thread(_remove_generated_assets, video_id)
+            await asyncio.to_thread(remove_local_video_assets, video_id)
+            await remove_published_assets_if_video_missing(video_id)

@@ -33,7 +33,8 @@ from ..errors import ApiError
 from ..security import Principal, current_principal
 from ..serializers import feed_video
 from ..urls import request_base_url
-from ..video_processing import probe_duration_ms
+from ..video_deletion import delete_owned_video
+from ..video_processing import probe_duration_ms, remove_published_assets_if_video_missing
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
@@ -93,13 +94,18 @@ async def _process(video_id: str, source: Path) -> None:
             """
             update videos
                set status = 'READY', playback_url = $2, thumbnail_url = $3
-             where id = $1
+             where id = $1 and status = 'PROCESSING'
             """,
             video_id, urls["hls_url"], urls["thumbnail_url"],
         )
     except Exception as exc:  # noqa: BLE001 - lỗi nào cũng phải ghi lại thành FAILED
-        await db.pool().execute("update videos set status = 'FAILED' where id = $1", video_id)
+        await db.pool().execute(
+            "update videos set status = 'FAILED' where id = $1 and status = 'PROCESSING'",
+            video_id,
+        )
         print(f"[upload] {video_id} FAILED: {exc}")
+    finally:
+        await remove_published_assets_if_video_missing(video_id)
 
 
 @router.post("/videos", status_code=202)
@@ -194,7 +200,6 @@ select v.id, v.title, v.caption, v.duration_ms, v.playback_url, v.thumbnail_url,
   left join categories c on c.id = v.category_id
   left join video_upload_sessions s on s.video_id = v.id
  where v.creator_id = $1
-   and v.status <> 'DELETED'
    and ($2::boolean or v.status = 'READY')
  order by v.created_at desc
 """
@@ -262,7 +267,7 @@ async def get_video(
     'READY' là phát được, 'FAILED' là bỏ cuộc (đừng chờ tiếp).
     """
     row = await db.pool().fetchrow(_VIDEO_SQL, video_id)
-    if row is None or row["status"] == "DELETED":
+    if row is None:
         raise ApiError(404, "NOT_FOUND", f"Không có video '{video_id}'")
 
     viewer: dict = {}
@@ -279,3 +284,12 @@ async def get_video(
         "status": row["status"],
         "video": feed_video(row, viewer, request_base_url(request)),
     }
+
+
+@router.delete("/videos/{video_id}", status_code=204)
+async def delete_video(
+    video_id: str,
+    principal: Principal = Depends(current_principal),
+):
+    await delete_owned_video(video_id, principal.user_id)
+    return Response(status_code=204)

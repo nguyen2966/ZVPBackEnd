@@ -244,8 +244,8 @@ này một cách có chủ đích ở phía server.
 Bỏ bookmark (`type=BOOKMARK, active=false`) thì item biến mất khỏi endpoint này ngay — server
 vẫn giữ tombstone nội bộ cho LWW nhưng không lộ ra (bất biến 4).
 
-Video đã xoá (`status = DELETED`) bị loại khỏi danh sách. Video đang `PROCESSING` thì **vẫn
-hiện**, để bookmark của user không im lặng biến mất trong lúc chờ xử lý.
+Video đã hard-delete không còn bookmark do foreign key cascade. Video đang `PROCESSING` thì
+**vẫn hiện**, để bookmark của user không im lặng biến mất trong lúc chờ xử lý.
 
 ---
 
@@ -521,6 +521,21 @@ cộng thêm `status` ở top-level.
 | `PROCESSING` | Tiếp tục poll |
 | `READY` | Hiển thị video |
 | `FAILED` | Bỏ cuộc, thông báo user video không hợp lệ |
+
+---
+
+## 4h. Xoá video
+
+`DELETE /api/videos/{videoId}` xoá video của chính user đang đăng nhập ở mọi trạng thái và
+trả `204`. Video không tồn tại hoặc không thuộc user cũng trả `204`, giúp client retry an toàn mà
+không tiết lộ video của user khác.
+
+`videoId` là định danh duy nhất dùng để xoá trên server. Submission chưa nhận được `videoId`
+chỉ tồn tại ở client và được xoá cục bộ; `uploadId` không phải định danh xoá video.
+
+Endpoint hard-delete row trong `videos`; foreign key cascade xoá upload session và reactions.
+Workspace, HLS và thumbnail cũng được xoá. Processor đang chạy không thể tạo lại row và sẽ dọn
+asset nếu việc xoá xảy ra trong lúc publish.
 
 ---
 

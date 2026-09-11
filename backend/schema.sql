@@ -69,7 +69,7 @@ create table videos (
   playback_url  text not null,
   thumbnail_url text,
   status        text not null default 'READY'
-                check (status in ('UPLOADING','PROCESSING','READY','FAILED','DELETED')),
+                check (status in ('UPLOADING','PROCESSING','READY','FAILED')),
 
   -- Counter denormalize, do trigger ở 4.4 cập nhật.
   like_count     int not null default 0,

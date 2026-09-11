@@ -115,7 +115,6 @@ async def _owned_session(upload_id: uuid.UUID, principal: Principal):
     if (
         row is None
         or row["creator_id"] != principal.user_id
-        or row["status"] == "DELETED"
     ):
         raise ApiError(404, "NOT_FOUND", "Không tìm thấy upload")
     return row

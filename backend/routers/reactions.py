@@ -91,7 +91,7 @@ async def post_reactions(
                 video = await conn.fetchrow(
                     "select id, status from videos where id = $1", m.videoId
                 )
-                if video is None or video["status"] == "DELETED":
+                if video is None:
                     results.append({"mutationId": m.mutationId, "status": "REJECTED",
                                     "reason": "VIDEO_NOT_FOUND"})
                     continue
@@ -163,7 +163,7 @@ async def post_reactions(
 
 
 # Bất biến 4: chỉ trả row active=true, tombstone là chuyện nội bộ của server.
-# Video đã xoá (status='DELETED') bị loại hẳn khỏi response (SPEC 3.6).
+# Hard delete cascade removes reactions belonging to a deleted video.
 _LIST_SQL = """
 select r.video_id, r.type::text as type, r.client_updated_at,
        v.title, v.thumbnail_url, v.duration_ms,
@@ -174,7 +174,7 @@ select r.video_id, r.type::text as type, r.client_updated_at,
   join videos v on v.id = r.video_id
   join users  u on u.id = v.creator_id
   left join categories c on c.id = v.category_id
- where r.user_id = $1 and r.active and v.status <> 'DELETED'
+ where r.user_id = $1 and r.active
  order by r.client_updated_at desc
 """
 
