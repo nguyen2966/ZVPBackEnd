@@ -28,12 +28,15 @@ from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Request, Response, UploadFile
 
 from .. import db
-from ..config import BASE_DIR, MAX_UPLOAD_BYTES
+from ..config import BASE_DIR
 from ..errors import ApiError
 from ..security import Principal, current_principal
 from ..serializers import feed_video
 from ..urls import request_base_url
-from ..video_processing import probe_duration_ms
+from ..upload_config import load_upload_configuration
+from ..video_deletion import delete_owned_video
+from ..video_processing import remove_published_assets_if_video_missing
+from ..video_metadata import probe_video_metadata, validation_errors
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
@@ -51,20 +54,27 @@ def _new_video_id() -> str:
     return f"up_{uuid.uuid4().hex[:11]}"
 
 
-async def _save_upload(upload: UploadFile, dest: Path) -> int:
-    """Ghi file lên đĩa theo khối, huỷ ngay khi vượt MAX_UPLOAD_BYTES."""
+async def _save_upload(
+    upload: UploadFile,
+    dest: Path,
+    max_file_size_bytes: int,
+) -> int:
+    """Write a file in chunks and stop as soon as it exceeds the configured limit."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     written = 0
     with dest.open("wb") as out:
         while chunk := await upload.read(CHUNK_BYTES):
             written += len(chunk)
-            if written > MAX_UPLOAD_BYTES:
+            if written > max_file_size_bytes:
                 out.close()
                 dest.unlink(missing_ok=True)
                 raise ApiError(
                     413, "FILE_TOO_LARGE",
-                    f"File vượt quá {MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
-                    details={"max_size_bytes": MAX_UPLOAD_BYTES, "actual_size_bytes": written},
+                    "File vượt quá giới hạn upload",
+                    details={
+                        "max_size_bytes": max_file_size_bytes,
+                        "actual_size_bytes": written,
+                    },
                 )
             out.write(chunk)
     return written
@@ -93,13 +103,18 @@ async def _process(video_id: str, source: Path) -> None:
             """
             update videos
                set status = 'READY', playback_url = $2, thumbnail_url = $3
-             where id = $1
+             where id = $1 and status = 'PROCESSING'
             """,
             video_id, urls["hls_url"], urls["thumbnail_url"],
         )
     except Exception as exc:  # noqa: BLE001 - lỗi nào cũng phải ghi lại thành FAILED
-        await db.pool().execute("update videos set status = 'FAILED' where id = $1", video_id)
+        await db.pool().execute(
+            "update videos set status = 'FAILED' where id = $1 and status = 'PROCESSING'",
+            video_id,
+        )
         print(f"[upload] {video_id} FAILED: {exc}")
+    finally:
+        await remove_published_assets_if_video_missing(video_id)
 
 
 @router.post("/videos", status_code=202)
@@ -113,6 +128,7 @@ async def upload_video(
     principal: Principal = Depends(current_principal),
 ):
     """Nhận file .mp4, trả 202 ngay; việc convert/upload chạy nền."""
+    upload_configuration = await load_upload_configuration()
     filename = file.filename or ""
     if not filename.lower().endswith(".mp4"):
         raise ApiError(
@@ -137,16 +153,29 @@ async def upload_video(
 
     video_id = _new_video_id()
     source = SOURCE_DIR / f"{video_id}.mp4"
-    await _save_upload(file, source)
+    await _save_upload(
+        file,
+        source,
+        upload_configuration.max_file_size_bytes,
+    )
 
     # Kiểm tra ngay tại request: file hỏng thì báo lỗi luôn thay vì để user chờ rồi nhận FAILED.
-    duration_ms = await asyncio.to_thread(probe_duration_ms, source)
-    if duration_ms <= 0:
+    metadata = await asyncio.to_thread(probe_video_metadata, source)
+    if metadata is None:
         source.unlink(missing_ok=True)
         raise ApiError(
             422, "INVALID_METADATA",
             "File không phải video hợp lệ hoặc không đọc được",
-            errors=[{"field": "file", "rule": "readable", "message": "ffprobe không đọc được duration của file"}],
+            errors=[{"field": "file", "rule": "readable", "message": "ffprobe không đọc được thông tin video"}],
+        )
+    errors = validation_errors(metadata, upload_configuration)
+    if errors:
+        source.unlink(missing_ok=True)
+        raise ApiError(
+            422,
+            "INVALID_METADATA",
+            "Video không đáp ứng cấu hình upload",
+            errors=errors,
         )
 
     # Key trên S3 suy được từ video_id nên biết trước URL cuối cùng, không cần cập nhật 2 lần.
@@ -160,12 +189,16 @@ async def upload_video(
         values ($1, $2, $3, $4, $5, $6, $7, $8, 'PROCESSING')
         """,
         video_id, principal.user_id, categoryId, title.strip(), caption.strip(),
-        duration_ms, urls["hls_url"], urls["thumbnail_url"],
+        metadata.duration_ms, urls["hls_url"], urls["thumbnail_url"],
     )
 
     background.add_task(_process, video_id, source)
     response.status_code = 202
-    return {"videoId": video_id, "status": "PROCESSING", "durationMs": duration_ms}
+    return {
+        "videoId": video_id,
+        "status": "PROCESSING",
+        "durationMs": metadata.duration_ms,
+    }
 
 
 _VIDEO_SQL = """
@@ -194,7 +227,6 @@ select v.id, v.title, v.caption, v.duration_ms, v.playback_url, v.thumbnail_url,
   left join categories c on c.id = v.category_id
   left join video_upload_sessions s on s.video_id = v.id
  where v.creator_id = $1
-   and v.status <> 'DELETED'
    and ($2::boolean or v.status = 'READY')
  order by v.created_at desc
 """
@@ -262,7 +294,7 @@ async def get_video(
     'READY' là phát được, 'FAILED' là bỏ cuộc (đừng chờ tiếp).
     """
     row = await db.pool().fetchrow(_VIDEO_SQL, video_id)
-    if row is None or row["status"] == "DELETED":
+    if row is None:
         raise ApiError(404, "NOT_FOUND", f"Không có video '{video_id}'")
 
     viewer: dict = {}
@@ -279,3 +311,12 @@ async def get_video(
         "status": row["status"],
         "video": feed_video(row, viewer, request_base_url(request)),
     }
+
+
+@router.delete("/videos/{video_id}", status_code=204)
+async def delete_video(
+    video_id: str,
+    principal: Principal = Depends(current_principal),
+):
+    await delete_owned_video(video_id, principal.user_id)
+    return Response(status_code=204)

@@ -5,7 +5,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import convert_v2
@@ -14,12 +14,18 @@ from backend.video_processing import process_resumable_video
 
 
 class FakePool:
-    def __init__(self) -> None:
+    def __init__(self, video_exists: bool = True) -> None:
         self.executions: list[tuple[str, tuple]] = []
+        self.video_exists = video_exists
 
     async def execute(self, query: str, *arguments):
         self.executions.append((query, arguments))
+        if not self.video_exists and "status = 'READY'" in query:
+            return "UPDATE 0"
         return "UPDATE 1"
+
+    async def fetchval(self, query: str, *arguments):
+        return self.video_exists
 
 
 class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
@@ -38,7 +44,7 @@ class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
                 "backend.video_processing.upload_storage.remove_workspace",
                 new=AsyncMock(),
             ) as remove_workspace,
-            patch("backend.video_processing._remove_generated_assets") as remove_assets,
+            patch("backend.video_processing.remove_local_video_assets") as remove_assets,
         ):
             await process_resumable_video(upload_id, "up_video", source)
 
@@ -66,7 +72,7 @@ class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
                 "backend.video_processing.upload_storage.remove_workspace",
                 new=AsyncMock(),
             ) as remove_workspace,
-            patch("backend.video_processing._remove_generated_assets") as remove_assets,
+            patch("backend.video_processing.remove_local_video_assets") as remove_assets,
         ):
             await process_resumable_video(
                 upload_id,
@@ -77,6 +83,31 @@ class VideoProcessingTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("status = 'FAILED'", pool.executions[0][0])
         remove_workspace.assert_awaited_once_with(upload_id)
         remove_assets.assert_called_once_with("up_invalid")
+
+    async def test_deletion_during_processing_removes_published_assets(self) -> None:
+        pool = FakePool(video_exists=False)
+        upload_id = uuid4()
+
+        with (
+            patch("backend.video_processing.db.pool", return_value=pool),
+            patch("backend.video_processing.probe_duration_ms", return_value=12_345),
+            patch("convert_v2.convert_one", return_value=(True, "converted")),
+            patch("vndata_s3.upload_hls_assets"),
+            patch("vndata_s3.verify_video"),
+            patch("vndata_s3.delete_video_assets") as remove_remote,
+            patch(
+                "backend.video_processing.upload_storage.remove_workspace",
+                new=AsyncMock(),
+            ),
+            patch("backend.video_processing.remove_local_video_assets"),
+        ):
+            await process_resumable_video(
+                upload_id,
+                "up_deleted",
+                Path("/temporary/original.mp4"),
+            )
+
+        remove_remote.assert_called_once_with("up_deleted")
 
 
 class HLSUploadPlanTests(unittest.TestCase):
@@ -121,6 +152,42 @@ class HLSUploadPlanTests(unittest.TestCase):
         keys = [key for _, key, _ in plan]
         self.assertIn("thumbnails/legacy.jpg", keys)
         self.assertEqual(keys[-1], "hls/legacy/master.m3u8")
+
+
+class S3DeletionTests(unittest.TestCase):
+    def test_video_deletion_removes_thumbnail_and_hls_prefix(self) -> None:
+        settings = vndata_s3.S3Settings(
+            endpoint="https://s3.example",
+            bucket="bucket",
+            access_key="key",
+            secret_key="secret",
+            region="region",
+            public_base_url="https://cdn.example",
+        )
+        paginator = MagicMock()
+        paginator.paginate.return_value = [
+            {"Contents": [{"Key": "hls/up_video/master.m3u8"}]}
+        ]
+        client = MagicMock()
+        client.get_paginator.return_value = paginator
+
+        with (
+            patch.object(vndata_s3.S3Settings, "from_env", return_value=settings),
+            patch.object(vndata_s3, "create_client", return_value=client),
+        ):
+            vndata_s3.delete_video_assets("up_video")
+
+        deleted_keys = {
+            item["Key"]
+            for item in client.delete_objects.call_args.kwargs["Delete"]["Objects"]
+        }
+        self.assertEqual(
+            deleted_keys,
+            {
+                "thumbnails/up_video.jpg",
+                "hls/up_video/master.m3u8",
+            },
+        )
 
 
 if __name__ == "__main__":

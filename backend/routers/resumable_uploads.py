@@ -17,7 +17,6 @@ from starlette.requests import ClientDisconnect
 
 from .. import db
 from ..config import (
-    MAX_UPLOAD_BYTES,
     MAX_UPLOAD_THUMBNAIL_BYTES,
     UPLOAD_PART_SIZE_BYTES,
     UPLOAD_SESSION_TTL_SECONDS,
@@ -25,17 +24,27 @@ from ..config import (
 )
 from ..errors import ApiError
 from ..security import Principal, current_principal
+from ..serializers import feed_video
 from ..upload_storage import UploadStorage
+from ..upload_config import load_upload_configuration
+from ..urls import request_base_url
 from ..video_processing import process_resumable_video
+from ..video_metadata import probe_video_metadata, validation_errors
 
 router = APIRouter(prefix="/api/video-uploads", tags=["upload"])
 upload_storage = UploadStorage(UPLOAD_STORAGE_DIR)
 
 _SESSION_SQL = """
 select s.id, s.video_id, s.file_size, s.part_size, s.expires_at,
-       v.creator_id, v.category_id, v.title, v.caption, v.status
+       v.creator_id, v.category_id, v.title, v.caption, v.status,
+       v.duration_ms, v.playback_url, v.thumbnail_url,
+       v.like_count, v.dislike_count, v.bookmark_count,
+       c.name as category_name,
+       u.display_name, u.username, u.avatar_url
   from video_upload_sessions s
   join videos v on v.id = s.video_id
+  join users u on u.id = v.creator_id
+  left join categories c on c.id = v.category_id
  where s.id = $1
 """
 
@@ -79,6 +88,14 @@ def _session_response(row, uploaded_parts: list[int] | None = None) -> dict:
     return response
 
 
+def _initialization_response(row, base_url: str) -> dict:
+    response = _session_response(row)
+    video_row = dict(row)
+    video_row["id"] = row["video_id"]
+    response["video"] = feed_video(video_row, {}, base_url)
+    return response
+
+
 def _matches_initialization(
     row,
     file_size: int,
@@ -99,7 +116,6 @@ async def _owned_session(upload_id: uuid.UUID, principal: Principal):
     if (
         row is None
         or row["creator_id"] != principal.user_id
-        or row["status"] == "DELETED"
     ):
         raise ApiError(404, "NOT_FOUND", "Không tìm thấy upload")
     return row
@@ -185,6 +201,7 @@ async def _read_part(request: Request, expected_size: int) -> bytes | None:
 
 @router.post("", status_code=201)
 async def initialize_upload(
+    request: Request,
     response: Response,
     uploadId: uuid.UUID = Form(...),
     title: str = Form(...),
@@ -195,6 +212,7 @@ async def initialize_upload(
     principal: Principal = Depends(current_principal),
 ):
     """Tạo video UPLOADING và một session dùng chung cho các part request."""
+    upload_configuration = await load_upload_configuration()
     normalized_title = title.strip()
     normalized_caption = caption.strip()
     if not normalized_title:
@@ -209,11 +227,14 @@ async def initialize_upload(
             "fileSize phải lớn hơn 0",
             errors=[{"field": "fileSize", "rule": "min", "message": "fileSize phải >= 1"}],
         )
-    if fileSize > MAX_UPLOAD_BYTES:
+    if fileSize > upload_configuration.max_file_size_bytes:
         raise ApiError(
             413, "FILE_TOO_LARGE",
-            f"fileSize vượt quá giới hạn {MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
-            details={"max_size_bytes": MAX_UPLOAD_BYTES, "actual_size_bytes": fileSize},
+            "fileSize vượt quá giới hạn upload",
+            details={
+                "max_size_bytes": upload_configuration.max_file_size_bytes,
+                "actual_size_bytes": fileSize,
+            },
         )
 
     existing = await db.pool().fetchrow(_SESSION_SQL, uploadId)
@@ -229,7 +250,7 @@ async def initialize_upload(
         ):
             raise ApiError(409, "UPLOAD_CONFLICT", "uploadId đã được dùng cho nội dung khác")
         response.status_code = 200
-        return _session_response(existing)
+        return _initialization_response(existing, request_base_url(request))
 
     category_exists = await db.pool().fetchval(
         "select exists(select 1 from categories where id = $1)",
@@ -261,7 +282,7 @@ async def initialize_upload(
                         id, creator_id, category_id, title, caption, duration_ms,
                         playback_url, thumbnail_url, status
                     )
-                    values ($1, $2, $3, $4, $5, 0, $6, $7, 'UPLOADING')
+                    values ($1, $2, $3, $4, $5, 0, $6, null, 'UPLOADING')
                     """,
                     video_id,
                     principal.user_id,
@@ -269,7 +290,6 @@ async def initialize_upload(
                     normalized_title,
                     normalized_caption,
                     urls["hls_url"],
-                    urls["thumbnail_url"],
                 )
                 await connection.execute(
                     """
@@ -297,13 +317,23 @@ async def initialize_upload(
         ):
             raise ApiError(409, "UPLOAD_CONFLICT", "uploadId đã được dùng cho nội dung khác")
         response.status_code = 200
-        return _session_response(existing)
+        return _initialization_response(existing, request_base_url(request))
 
     try:
         await upload_storage.create_workspace(uploadId)
         from vndata_s3 import upload_thumbnail
 
         await asyncio.to_thread(upload_thumbnail, video_id, thumbnail_content)
+        await db.pool().execute(
+            """
+            update videos
+               set thumbnail_url = $2
+             where id = $1 and creator_id = $3 and status = 'UPLOADING'
+            """,
+            video_id,
+            urls["thumbnail_url"],
+            principal.user_id,
+        )
     except Exception as error:
         await db.pool().execute(
             "delete from videos where id = $1 and creator_id = $2 and status = 'UPLOADING'",
@@ -315,7 +345,7 @@ async def initialize_upload(
 
     created = await db.pool().fetchrow(_SESSION_SQL, uploadId)
     response.status_code = 201
-    return _session_response(created)
+    return _initialization_response(created, request_base_url(request))
 
 
 @router.put("/{upload_id}/parts/{part_number}", status_code=204)
@@ -396,6 +426,28 @@ async def complete_upload(
     except (FileNotFoundError, ValueError) as error:
         raise ApiError(409, "UPLOAD_INCOMPLETE", str(error)) from error
 
+    upload_configuration = await load_upload_configuration()
+    metadata = await asyncio.to_thread(probe_video_metadata, source)
+    if metadata is None:
+        raise ApiError(
+            422,
+            "INVALID_METADATA",
+            "File không phải video hợp lệ hoặc không đọc được",
+            errors=[{
+                "field": "file",
+                "rule": "readable",
+                "message": "ffprobe không đọc được thông tin video",
+            }],
+        )
+    errors = validation_errors(metadata, upload_configuration)
+    if errors:
+        raise ApiError(
+            422,
+            "INVALID_METADATA",
+            "Video không đáp ứng cấu hình upload",
+            errors=errors,
+        )
+
     updated = await db.pool().fetchrow(
         """
         update videos
@@ -417,6 +469,7 @@ async def complete_upload(
         upload_id,
         row["video_id"],
         source,
+        metadata.duration_ms,
     )
     result = _session_response(row)
     result["status"] = "PROCESSING"

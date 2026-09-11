@@ -189,6 +189,32 @@ def upload_hls_assets(video_id: str, *, force: bool = False) -> dict[str, str]:
     return _upload_plan(video_id, hls_upload_plan(video_id), force=force)
 
 
+def delete_video_assets(video_id: str) -> None:
+    """Delete the thumbnail and every HLS object belonging to one video."""
+    settings = S3Settings.from_env()
+    client = create_client(settings)
+    keys = [f"{THUMB_PREFIX}/{video_id}.jpg"]
+
+    paginator = client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(
+        Bucket=settings.bucket,
+        Prefix=f"hls/{video_id}/",
+    ):
+        keys.extend(item["Key"] for item in page.get("Contents", []))
+
+    for offset in range(0, len(keys), 1000):
+        client.delete_objects(
+            Bucket=settings.bucket,
+            Delete={
+                "Objects": [
+                    {"Key": key}
+                    for key in keys[offset:offset + 1000]
+                ],
+                "Quiet": True,
+            },
+        )
+
+
 def check_connection() -> None:
     settings = S3Settings.from_env()
     client = create_client(settings)

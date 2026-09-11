@@ -32,6 +32,13 @@ DEFAULT_PAYLOAD = {
     "sync": {"batchSize": 50, "debounceMs": 400, "maxAttempts": 8},
     "cache": {"videoTtlHours": 72, "maxCachedVideos": 200,
               "sessionTtlDays": 90, "maxSessions": 5000},
+    "upload": {
+        "maxFileSizeBytes": 500 * 1024 * 1024,
+        "maxVideoBitRate": 6_000_000,
+        "maxDurationSeconds": 300,
+        "maxFramesPerSecond": 30,
+        "maxResolution": {"width": 720, "height": 1280},
+    },
 }
 
 

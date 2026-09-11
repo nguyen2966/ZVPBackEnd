@@ -115,7 +115,7 @@ create table videos (
  playback_url  text not null,             -- HLS master playlist, xem BACKEND_HLS_REQUIREMENTS.md
  thumbnail_url text,
  status        text not null default 'READY'
-               check (status in ('UPLOADING','PROCESSING','READY','FAILED','DELETED')),
+               check (status in ('UPLOADING','PROCESSING','READY','FAILED')),
 
 
  -- Counter denormalize, do trigger ở 4.4 cập nhật. Đặt trên `videos` thay vì tách bảng riêng:
@@ -419,7 +419,8 @@ bookmark trên một thiết bị vừa login (cache local trống), và không 
 để vẽ một screen. Vẫn trả kèm `video` cả với `type = LIKE`/`DISLIKE` — cùng một shape cho mọi row.
 
 
-Nếu video đã bị xoá (`status = 'DELETED'`): bỏ hẳn row đó khỏi response.
+Video đã bị xoá không còn row trong `videos`; foreign key cascade cũng loại reaction tương ứng khỏi
+response.
 
 
 ### 3.7 `GET /api/config`
@@ -455,6 +456,8 @@ Cần auth. Client mới dùng bốn endpoint sau thay cho việc gửi toàn b�
 
 `uploadId` do client sinh và giữ ổn định. Khởi tạo lại cùng UUID + metadata hoặc gửi lại cùng part
 phải an toàn. Backend trả `partSize`; client không tự quyết định kích thước part.
+Response khởi tạo trả thêm `video` theo cùng shape với My Videos sau khi thumbnail đã được upload,
+để client cập nhật đúng một pending card mà không fetch lại cả danh sách.
 
 
 State machine:
@@ -525,7 +528,7 @@ timeout mà không sợ đếm đôi. Đây là lý do counter phải do trigger
 Theo thứ tự, trước khi upsert:
 
 
-1. `videoId` không tồn tại hoặc `status = 'DELETED'` → `REJECTED` / `VIDEO_NOT_FOUND`.
+1. `videoId` không tồn tại → `REJECTED` / `VIDEO_NOT_FOUND`.
 2. `type` không thuộc enum → `REJECTED` / `INVALID_TYPE`.
 3. `clientUpdatedAt` parse lỗi, hoặc lệch quá 1 năm so với `now()` → `REJECTED` /
   `INVALID_TIMESTAMP`.
@@ -640,7 +643,14 @@ Server lắp `payload` từ các row `app_config_entries` của bundle đang b�
  },
  "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
  "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
-            "sessionTtlDays": 90, "maxSessions": 5000 }
+            "sessionTtlDays": 90, "maxSessions": 5000 },
+ "upload": {
+   "maxFileSizeBytes": 524288000,
+   "maxVideoBitRate": 6000000,
+   "maxDurationSeconds": 300,
+   "maxFramesPerSecond": 30,
+   "maxResolution": { "width": 720, "height": 1280 }
+ }
 }
 ```
 
@@ -648,6 +658,10 @@ Server lắp `payload` từ các row `app_config_entries` của bundle đang b�
 `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client** — server chỉ chứa và phát chúng.
 Đây là cơ chế để đổi trọng số/A-B mà không cần release app, nên `version` phải tăng mỗi lần đổi
 các entry, và mỗi lần đổi chỉ nên bật một bundle.
+
+`upload.*` is shared policy: the client uses it for capture and early validation, while upload
+endpoints load the enabled database bundle and enforce the same values. Resolution is compared
+by short and long edge, so both 720x1280 and 1280x720 are accepted.
 
 
 Seed:
@@ -831,8 +845,8 @@ Không phải bỏ vì thiếu thời gian — mà vì chúng thuộc về clien
   `Retry-After` (mục 7) — client đọc chính header đó.
 3. **Video upload.** Resumable upload dùng `video_upload_sessions` và bốn endpoint ở mục 3.8.
   Endpoint cũ `POST /api/videos` chỉ được giữ tạm thời để rollback trong lúc xác nhận client mới.
-4. **Xoá video.** Đặt `status = 'DELETED'` chứ đừng `DELETE` row: `reactions` có FK
-  `on delete cascade`, xoá thật là mất luôn bookmark của user và client sẽ không được thông báo gì.
+4. **Xoá video.** `DELETE /api/videos/{videoId}` hard-delete row; `video_upload_sessions` và
+  `reactions` bị xoá theo foreign key cascade. Đây là hành vi có chủ đích của thao tác xoá vĩnh viễn.
 
 
 

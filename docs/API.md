@@ -66,7 +66,7 @@ Một số lỗi có thêm `details` hoặc `errors` để client xử lý tự 
 
 ```json
 // 413 FILE_TOO_LARGE
-{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn 200MB", "details": { "max_size_bytes": 209715200, "actual_size_bytes": 500000000 } } }
+{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn upload", "details": { "max_size_bytes": 524288000, "actual_size_bytes": 600000000 } } }
 
 // 422 INVALID_METADATA
 { "error": { "code": "INVALID_METADATA", "message": "Metadata validation failed.", "errors": [{ "field": "title", "rule": "min_length", "message": "title không được rỗng" }] } }
@@ -244,8 +244,8 @@ này một cách có chủ đích ở phía server.
 Bỏ bookmark (`type=BOOKMARK, active=false`) thì item biến mất khỏi endpoint này ngay — server
 vẫn giữ tombstone nội bộ cho LWW nhưng không lộ ra (bất biến 4).
 
-Video đã xoá (`status = DELETED`) bị loại khỏi danh sách. Video đang `PROCESSING` thì **vẫn
-hiện**, để bookmark của user không im lặng biến mất trong lúc chờ xử lý.
+Video đã hard-delete không còn bookmark do foreign key cascade. Video đang `PROCESSING` thì
+**vẫn hiện**, để bookmark của user không im lặng biến mất trong lúc chờ xử lý.
 
 ---
 
@@ -310,10 +310,13 @@ MP4**.
 | `title` | String | Bắt buộc, không được rỗng sau khi trim |
 | `caption` | String | Tuỳ chọn, mặc định `""` |
 | `categoryId` | Int | Phải tồn tại trong database |
-| `fileSize` | Int64 | Dung lượng MP4 theo byte, tối đa theo `MAX_UPLOAD_MB` |
+| `fileSize` | Int64 | Dung lượng MP4 theo byte, tối đa theo `upload.maxFileSizeBytes` của config đang bật |
 | `thumbnail` | JPEG | Tối đa 2 MiB |
 
 Backend tạo video ở trạng thái `UPLOADING`, upload thumbnail lên VNData và tạo workspace tạm.
+Trong cửa sổ khởi tạo, My Videos có thể thấy video với `thumbnailAsset.url = null`; client tiếp tục
+dùng thumbnail local. Backend chỉ lưu URL thumbnail vào video sau khi object đã upload thành công,
+rồi mới trả response khởi tạo.
 
 ```json
 // 201 Created
@@ -321,11 +324,35 @@ Backend tạo video ở trạng thái `UPLOADING`, upload thumbnail lên VNData 
   "uploadId": "1d41ea51-9a6a-48c1-8b8d-1b3c318cb491",
   "videoId": "up_a1b2c3d4e5f",
   "status": "UPLOADING",
-  "partSize": 8388608
+  "partSize": 8388608,
+  "video": {
+    "id": "up_a1b2c3d4e5f",
+    "user": {
+      "id": "...",
+      "displayName": "...",
+      "username": "...",
+      "avatarUrl": null
+    },
+    "category": { "name": "Music" },
+    "title": "Video title",
+    "caption": "",
+    "durationMs": 0,
+    "playbackAsset": { "url": "https://.../master.m3u8" },
+    "thumbnailAsset": { "url": "https://.../up_a1b2c3d4e5f.jpg" },
+    "engagement": {
+      "likeCount": 0,
+      "dislikeCount": 0,
+      "bookmarkCount": 0
+    },
+    "viewerState": { "isBookmarked": false, "reaction": null }
+  }
 }
 ```
 
-Gửi lại đúng `uploadId` và cùng metadata là idempotent: backend trả `200` với cùng `videoId`.
+`video` dùng cùng shape với item trong My Videos để client thay nội dung local card ngay sau khi
+khởi tạo mà không fetch lại toàn bộ danh sách. Thumbnail đã được upload trước khi response này được
+trả về. Gửi lại đúng `uploadId` và cùng metadata là idempotent: backend trả `200` với cùng
+`videoId` và `video`.
 Nếu UUID đã được dùng cho nội dung khác, backend trả `409 UPLOAD_CONFLICT`.
 
 ### 4d.2 `PUT /api/video-uploads/{uploadId}/parts/{partNumber}`
@@ -436,7 +463,7 @@ Client gọi `GET /api/videos/{videoId}` để theo dõi. Video chỉ vào feed 
 | HTTP | `code` | Khi nào |
 |---|---|---|
 | `401` | `TOKEN_EXPIRED` | Thiếu/hết/hỏng token |
-| `413` | `FILE_TOO_LARGE` | File vượt quá 200MB |
+| `413` | `FILE_TOO_LARGE` | File vượt quá `upload.maxFileSizeBytes` của config đang bật |
 | `422` | `INVALID_METADATA` | File không phải `.mp4`, title rỗng, `categoryId` không tồn tại, ffprobe không đọc được |
 | `404` | `NOT_FOUND` | Video không tồn tại (chỉ dùng cho `GET /api/videos/{id}`) |
 
@@ -494,6 +521,21 @@ cộng thêm `status` ở top-level.
 | `PROCESSING` | Tiếp tục poll |
 | `READY` | Hiển thị video |
 | `FAILED` | Bỏ cuộc, thông báo user video không hợp lệ |
+
+---
+
+## 4h. Xoá video
+
+`DELETE /api/videos/{videoId}` xoá video của chính user đang đăng nhập ở mọi trạng thái và
+trả `204`. Video không tồn tại hoặc không thuộc user cũng trả `204`, giúp client retry an toàn mà
+không tiết lộ video của user khác.
+
+`videoId` là định danh duy nhất dùng để xoá trên server. Submission chưa nhận được `videoId`
+chỉ tồn tại ở client và được xoá cục bộ; `uploadId` không phải định danh xoá video.
+
+Endpoint hard-delete row trong `videos`; foreign key cascade xoá upload session và reactions.
+Workspace, HLS và thumbnail cũng được xoá. Processor đang chạy không thể tạo lại row và sẽ dọn
+asset nếu việc xoá xảy ra trong lúc publish.
 
 ---
 
@@ -671,7 +713,14 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
     },
     "sync":  { "batchSize": 50, "debounceMs": 400, "maxAttempts": 8 },
     "cache": { "videoTtlHours": 72, "maxCachedVideos": 200,
-               "sessionTtlDays": 90, "maxSessions": 5000 }
+               "sessionTtlDays": 90, "maxSessions": 5000 },
+    "upload": {
+      "maxFileSizeBytes": 524288000,
+      "maxVideoBitRate": 6000000,
+      "maxDurationSeconds": 300,
+      "maxFramesPerSecond": 30,
+      "maxResolution": { "width": 720, "height": 1280 }
+    }
   }
 }
 ```
@@ -679,8 +728,8 @@ Cần auth. Trả bundle config đang bật, kèm `ETag`.
 - `ETag` hiện tại: `W/"config-v1"`, derive từ `version`. Gửi lại qua `If-None-Match` → `304`.
 - **Không bao giờ trả `404`.** Chưa có bundle nào bật thì trả `payload: {}` với `version = 0`.
   Client dùng default compile-in cho các key bị thiếu.
-- `payload` là opaque với server — đổi trọng số ranking không cần release app, chỉ cần tăng
-  `version` và bật bundle mới.
+- Upload endpoints read `upload.*` from the enabled database bundle. Updating these entries
+  advances the version through the database trigger, so clients refresh the same limits.
 - `ranking.*` là tham số cho ranking engine **chạy hoàn toàn ở client**.
 
 ---
@@ -763,8 +812,8 @@ Hiện **chưa bật rate limit**. Nếu bật sau này thì `429` sẽ luôn k�
 ### Chi tiết 413 FILE_TOO_LARGE
 
 ```json
-{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn 200MB",
-  "details": { "max_size_bytes": 209715200, "actual_size_bytes": 500000000 } } }
+{ "error": { "code": "FILE_TOO_LARGE", "message": "File vượt quá giới hạn upload",
+  "details": { "max_size_bytes": 524288000, "actual_size_bytes": 600000000 } } }
 ```
 
 ### Chi tiết 422 INVALID_METADATA

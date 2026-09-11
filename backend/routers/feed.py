@@ -47,9 +47,8 @@ select video_id, type
 # Bookmark của một user, trả về ĐÚNG shape của /api/feed.
 # Sắp xếp theo client_updated_at giảm dần: bookmark mới bấm nằm trên cùng - khác /api/feed
 # (random) vì đây là danh sách người dùng tự tạo, thứ tự ngẫu nhiên sẽ rất khó dùng.
-# Lọc status <> 'DELETED' (không phải = 'READY') cho khớp GET /api/reactions: video bị xoá
-# phải biến mất khỏi bookmark, còn video đang PROCESSING thì vẫn nên hiện trong danh sách
-# đã lưu của user thay vì im lặng mất tích.
+# Hard delete cascade removes the bookmark when its video is deleted. Videos still
+# PROCESSING remain visible in the user's saved list.
 _BOOKMARKS_SQL = """
 select v.id, v.title, v.caption, v.duration_ms, v.playback_url, v.thumbnail_url,
        v.like_count, v.dislike_count, v.bookmark_count,
@@ -60,7 +59,6 @@ select v.id, v.title, v.caption, v.duration_ms, v.playback_url, v.thumbnail_url,
   join users  u on u.id = v.creator_id
   left join categories c on c.id = v.category_id
  where r.user_id = $1 and r.type = 'BOOKMARK' and r.active
-   and v.status <> 'DELETED'
  order by r.client_updated_at desc
 """
 
