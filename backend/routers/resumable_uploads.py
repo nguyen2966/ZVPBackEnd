@@ -17,7 +17,6 @@ from starlette.requests import ClientDisconnect
 
 from .. import db
 from ..config import (
-    MAX_UPLOAD_BYTES,
     MAX_UPLOAD_THUMBNAIL_BYTES,
     UPLOAD_PART_SIZE_BYTES,
     UPLOAD_SESSION_TTL_SECONDS,
@@ -27,8 +26,10 @@ from ..errors import ApiError
 from ..security import Principal, current_principal
 from ..serializers import feed_video
 from ..upload_storage import UploadStorage
+from ..upload_config import load_upload_configuration
 from ..urls import request_base_url
 from ..video_processing import process_resumable_video
+from ..video_metadata import probe_video_metadata, validation_errors
 
 router = APIRouter(prefix="/api/video-uploads", tags=["upload"])
 upload_storage = UploadStorage(UPLOAD_STORAGE_DIR)
@@ -211,6 +212,7 @@ async def initialize_upload(
     principal: Principal = Depends(current_principal),
 ):
     """Tạo video UPLOADING và một session dùng chung cho các part request."""
+    upload_configuration = await load_upload_configuration()
     normalized_title = title.strip()
     normalized_caption = caption.strip()
     if not normalized_title:
@@ -225,11 +227,14 @@ async def initialize_upload(
             "fileSize phải lớn hơn 0",
             errors=[{"field": "fileSize", "rule": "min", "message": "fileSize phải >= 1"}],
         )
-    if fileSize > MAX_UPLOAD_BYTES:
+    if fileSize > upload_configuration.max_file_size_bytes:
         raise ApiError(
             413, "FILE_TOO_LARGE",
-            f"fileSize vượt quá giới hạn {MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
-            details={"max_size_bytes": MAX_UPLOAD_BYTES, "actual_size_bytes": fileSize},
+            "fileSize vượt quá giới hạn upload",
+            details={
+                "max_size_bytes": upload_configuration.max_file_size_bytes,
+                "actual_size_bytes": fileSize,
+            },
         )
 
     existing = await db.pool().fetchrow(_SESSION_SQL, uploadId)
@@ -421,6 +426,28 @@ async def complete_upload(
     except (FileNotFoundError, ValueError) as error:
         raise ApiError(409, "UPLOAD_INCOMPLETE", str(error)) from error
 
+    upload_configuration = await load_upload_configuration()
+    metadata = await asyncio.to_thread(probe_video_metadata, source)
+    if metadata is None:
+        raise ApiError(
+            422,
+            "INVALID_METADATA",
+            "File không phải video hợp lệ hoặc không đọc được",
+            errors=[{
+                "field": "file",
+                "rule": "readable",
+                "message": "ffprobe không đọc được thông tin video",
+            }],
+        )
+    errors = validation_errors(metadata, upload_configuration)
+    if errors:
+        raise ApiError(
+            422,
+            "INVALID_METADATA",
+            "Video không đáp ứng cấu hình upload",
+            errors=errors,
+        )
+
     updated = await db.pool().fetchrow(
         """
         update videos
@@ -442,6 +469,7 @@ async def complete_upload(
         upload_id,
         row["video_id"],
         source,
+        metadata.duration_ms,
     )
     result = _session_response(row)
     result["status"] = "PROCESSING"

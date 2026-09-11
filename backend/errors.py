@@ -35,7 +35,7 @@ class ApiError(Exception):
     Thuộc tính ``details`` và ``errors`` cho phép đính kèm payload mở rộng:
 
     - ``details`` — dict tuỳ ý, dùng cho 413 FILE_TOO_LARGE
-      (ví dụ: {"max_size_bytes": 209715200, "actual_size_bytes": 524288000})
+      (ví dụ: {"max_size_bytes": 524288000, "actual_size_bytes": 600000000})
 
     - ``errors`` — list of {field, rule, message}, dùng cho 422 INVALID_METADATA
       (ví dụ: [{"field": "title", "rule": "min_length", "message": "title không được rỗng"}])
