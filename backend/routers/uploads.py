@@ -29,14 +29,13 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Request, Re
 
 from .. import db
 from ..config import BASE_DIR
+from ..upload_config import load_max_upload_file_size
 from ..errors import ApiError
 from ..security import Principal, current_principal
 from ..serializers import feed_video
 from ..urls import request_base_url
-from ..upload_config import load_upload_configuration
 from ..video_deletion import delete_owned_video
-from ..video_processing import remove_published_assets_if_video_missing
-from ..video_metadata import probe_video_metadata, validation_errors
+from ..video_processing import probe_duration_ms, remove_published_assets_if_video_missing
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
@@ -54,12 +53,8 @@ def _new_video_id() -> str:
     return f"up_{uuid.uuid4().hex[:11]}"
 
 
-async def _save_upload(
-    upload: UploadFile,
-    dest: Path,
-    max_file_size_bytes: int,
-) -> int:
-    """Write a file in chunks and stop as soon as it exceeds the configured limit."""
+async def _save_upload(upload: UploadFile, dest: Path, max_file_size_bytes: int) -> int:
+    """Ghi file lên đĩa theo khối, huỷ ngay khi vượt max_file_size_bytes."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     written = 0
     with dest.open("wb") as out:
@@ -70,11 +65,8 @@ async def _save_upload(
                 dest.unlink(missing_ok=True)
                 raise ApiError(
                     413, "FILE_TOO_LARGE",
-                    "File vượt quá giới hạn upload",
-                    details={
-                        "max_size_bytes": max_file_size_bytes,
-                        "actual_size_bytes": written,
-                    },
+                    f"File vượt quá {max_file_size_bytes // (1024 * 1024)}MB",
+                    details={"max_size_bytes": max_file_size_bytes, "actual_size_bytes": written},
                 )
             out.write(chunk)
     return written
@@ -128,7 +120,6 @@ async def upload_video(
     principal: Principal = Depends(current_principal),
 ):
     """Nhận file .mp4, trả 202 ngay; việc convert/upload chạy nền."""
-    upload_configuration = await load_upload_configuration()
     filename = file.filename or ""
     if not filename.lower().endswith(".mp4"):
         raise ApiError(
@@ -153,29 +144,17 @@ async def upload_video(
 
     video_id = _new_video_id()
     source = SOURCE_DIR / f"{video_id}.mp4"
-    await _save_upload(
-        file,
-        source,
-        upload_configuration.max_file_size_bytes,
-    )
+    max_file_size_bytes = await load_max_upload_file_size()
+    await _save_upload(file, source, max_file_size_bytes)
 
     # Kiểm tra ngay tại request: file hỏng thì báo lỗi luôn thay vì để user chờ rồi nhận FAILED.
-    metadata = await asyncio.to_thread(probe_video_metadata, source)
-    if metadata is None:
+    duration_ms = await asyncio.to_thread(probe_duration_ms, source)
+    if duration_ms <= 0:
         source.unlink(missing_ok=True)
         raise ApiError(
             422, "INVALID_METADATA",
             "File không phải video hợp lệ hoặc không đọc được",
-            errors=[{"field": "file", "rule": "readable", "message": "ffprobe không đọc được thông tin video"}],
-        )
-    errors = validation_errors(metadata, upload_configuration)
-    if errors:
-        source.unlink(missing_ok=True)
-        raise ApiError(
-            422,
-            "INVALID_METADATA",
-            "Video không đáp ứng cấu hình upload",
-            errors=errors,
+            errors=[{"field": "file", "rule": "readable", "message": "ffprobe không đọc được duration của file"}],
         )
 
     # Key trên S3 suy được từ video_id nên biết trước URL cuối cùng, không cần cập nhật 2 lần.
@@ -189,16 +168,12 @@ async def upload_video(
         values ($1, $2, $3, $4, $5, $6, $7, $8, 'PROCESSING')
         """,
         video_id, principal.user_id, categoryId, title.strip(), caption.strip(),
-        metadata.duration_ms, urls["hls_url"], urls["thumbnail_url"],
+        duration_ms, urls["hls_url"], urls["thumbnail_url"],
     )
 
     background.add_task(_process, video_id, source)
     response.status_code = 202
-    return {
-        "videoId": video_id,
-        "status": "PROCESSING",
-        "durationMs": metadata.duration_ms,
-    }
+    return {"videoId": video_id, "status": "PROCESSING", "durationMs": duration_ms}
 
 
 _VIDEO_SQL = """
