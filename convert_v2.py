@@ -1,4 +1,3 @@
-# convert_v2.py
 """
 Chuẩn bị asset HLS V2 để upload lên VNDATA S3, theo đúng định dạng client Android
 (ZVideoPlus) đang mong đợi - xem des.md. Script này không sửa output của convert.py.
@@ -78,14 +77,52 @@ def run(cmd: list[str]) -> tuple[bool, str]:
     return proc.returncode == 0, (proc.stderr or "").strip()
 
 
+def rotation_of(stream: dict) -> int:
+    """
+    Góc xoay khai báo trong container, chuẩn hoá về 0/90/180/270.
+
+    ffprobe để góc xoay ở hai chỗ khác nhau tuỳ phiên bản, nên phải đọc cả hai:
+        - ffmpeg >= 5: ``side_data_list`` có entry ``{"rotation": -90}``
+        - ffmpeg cũ  : ``tags.rotate`` = ``"90"``
+
+    Trả về 0 khi không có cờ xoay - đúng trường hợp file tải từ YouTube, vốn đã được
+    encode sẵn đúng chiều.
+    """
+    for side_data in stream.get("side_data_list") or []:
+        if "rotation" in side_data:
+            try:
+                return int(float(side_data["rotation"])) % 360
+            except (TypeError, ValueError):
+                pass
+    tag = (stream.get("tags") or {}).get("rotate")
+    if tag is not None:
+        try:
+            return int(float(tag)) % 360
+        except (TypeError, ValueError):
+            pass
+    return 0
+
+
 def probe_source(src: Path) -> tuple[int, int, float, bool]:
     """
     Đọc width/height/fps và có audio hay không của video nguồn bằng ffprobe.
     Trả về (width, height, fps, has_audio).
+
+    width/height trả về là kích thước **hiển thị**, đã áp dụng cờ xoay của container.
+
+    Vì sao phải xoay:
+        Camera Android quay dọc vẫn ghi frame ở dạng ngang (1280x720) kèm cờ xoay 90 độ -
+        đây là hành vi chuẩn, người xem thấy đúng chiều vì player đọc cờ đó. Nhưng ffprobe
+        báo height=720, nên ``tiers_for`` chỉ chọn được tới pg_3 (360x640) và ``scale=-2:H``
+        cũng scale nhầm cạnh. Kết quả: video quay bằng app chỉ có tối đa 360x640 trong khi
+        video tải từ YouTube (đã encode dọc sẵn, không có cờ xoay) được đủ 5 tier tới
+        720x1280 - đúng triệu chứng "video quay bằng app bị mờ hơn".
+
+        File không có cờ xoay đi đúng nhánh cũ, không đổi gì.
     """
     cmd = [
         "ffprobe", "-v", "error",
-        "-show_entries", "stream=codec_type,width,height,r_frame_rate",
+        "-show_entries", "stream=codec_type,width,height,r_frame_rate:stream_tags=rotate:stream_side_data=rotation",
         "-of", "json", str(src),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -98,7 +135,12 @@ def probe_source(src: Path) -> tuple[int, int, float, bool]:
     stream = video_streams[0]
     num, _, den = stream["r_frame_rate"].partition("/")
     fps = float(num) / float(den or 1)
-    return int(stream["width"]), int(stream["height"]), fps, has_audio
+
+    width, height = int(stream["width"]), int(stream["height"])
+    # Chỉ 90/270 mới đổi chiều; 180 xoay ngược nhưng giữ nguyên kích thước.
+    if rotation_of(stream) in (90, 270):
+        width, height = height, width
+    return width, height, fps, has_audio
 
 
 def tiers_for(source_height: int) -> list[Tier]:
