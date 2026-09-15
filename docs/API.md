@@ -155,6 +155,16 @@ Không cần auth.
 | Session bị revoke vì thiết bị khác đăng nhập | 401 | `SESSION_REVOKED_CONCURRENT_LOGIN` | "Your account has been logged in on another device." |
 | Session bị revoke vì logout/admin | 401 | `SESSION_INVALID` | "Invalid or ended session." |
 
+### `POST /api/auth/logout`
+
+Cần auth. Revoke session hiện tại; client nên discard cả access token lẫn refresh token.
+
+```
+// 204 No Content — thành công
+```
+
+Idempotent: nếu session đã bị revoke (logout rồi, hoặc login thiết bị khác), server vẫn trả `204`.
+
 ---
 
 ## 4. `GET /api/feed`

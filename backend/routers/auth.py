@@ -12,7 +12,9 @@ from ..config import ACCESS_TOKEN_TTL_SECONDS, AVATAR_POOL
 from ..errors import ApiError
 from ..models import LoginRequest, RefreshRequest, RegisterRequest
 from ..security import (
+    Principal,
     create_access_token,
+    current_principal,
     hash_password,
     hash_refresh_token,
     new_refresh_token,
@@ -116,3 +118,22 @@ async def refresh(body: RefreshRequest):
         "accessToken": create_access_token(row["user_id"], row["id"]),
         "expiresInSeconds": ACCESS_TOKEN_TTL_SECONDS,
     }
+
+
+@router.post("/logout", status_code=204)
+async def logout(
+    response: Response,
+    principal: Principal = Depends(current_principal),
+):
+    """Revoke the current session; client should discard both access and refresh tokens."""
+    await db.pool().execute(
+        """
+        update sessions
+           set revoked_at = now(),
+               revoked_reason = 'LOGOUT'
+         where id = $1 and user_id = $2 and revoked_at is null
+        """,
+        principal.session_id,
+        principal.user_id,
+    )
+    return response
