@@ -66,7 +66,7 @@ UPLOAD_STORAGE_DIR = Path(
 # video_upload_sessions.part_size khi khởi tạo để không đổi giữa chừng trong cùng upload.
 UPLOAD_PART_SIZE_BYTES = 8 * 1024 * 1024
 UPLOAD_SESSION_TTL_SECONDS = 24 * 60 * 60
-MAX_UPLOAD_THUMBNAIL_BYTES = 2 * 1024 * 1024
+MAX_UPLOAD_THUMBNAIL_BYTES = 10 * 1024 * 1024
 
 # Pool of avatar URLs assigned to new users / seed creators.
 # Hosted on VNDATA S3 bucket zvideo-media/avatars/.
